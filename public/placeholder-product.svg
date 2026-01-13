@@ -1,0 +1,7 @@
+<!-- Simple SVG placeholder for missing product images -->
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#f3f4f6"/>
+  <path d="M20 20h24v24H20z" stroke="#9ca3af" stroke-width="2" fill="none"/>
+  <circle cx="26" cy="28" r="2" fill="#9ca3af"/>
+  <path d="M20 38l6-6 4 4 8-8 6 6v6H20v-2z" fill="#9ca3af"/>
+</svg>
