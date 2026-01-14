@@ -281,25 +281,16 @@ class ProductService {
       ...baseData,
       description: product.description || 'Premium quality mirror with modern design and excellent craftsmanship.',
       specifications: {
-        brand: 'ESPEJO',
-        material: product.material || 'Premium Glass',
-        warranty: '5 Years',
-        dimensions: product.dimensions || 'Standard Size',
-        weight: product.weight || 'Lightweight',
-        installation: 'Wall Mount',
-        frameType: product.frameType || 'Modern',
-        glassType: 'High-Quality Reflective Glass'
+        brand: product.specifications?.brand || product.brand || '',
+        warranty: product.specifications?.warranty || product.warranty || '',
+        weight: product.specifications?.weight || product.weight || '',
+        frameType: product.specifications?.frameType || product.frameType || '',
+        material: product.specifications?.material || product.material || '',
+        dimensions: product.specifications?.dimensions || product.dimensions || '',
+        installation: product.specifications?.installation || product.installation || '',
+        glassType: product.specifications?.glassType || product.glassType || ''
       },
-      features: [
-        'High-quality reflective glass',
-        'Durable frame construction', 
-        'Easy wall mounting system',
-        'Modern contemporary design',
-        'Scratch resistant surface',
-        'Moisture resistant coating',
-        'Professional installation included',
-        'Premium packaging for safe delivery'
-      ],
+      features: (product.features && product.features.length > 0) ? product.features : [],
       benefits: [
         'Enhances room aesthetics',
         'Makes spaces appear larger',
