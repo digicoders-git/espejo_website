@@ -26,7 +26,8 @@ const ProductDetailPage = () => {
   const [showZoom, setShowZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
 
-  // Fetch product details
+
+
   useEffect(() => {
     const fetchProductData = async () => {
       try {
@@ -39,12 +40,12 @@ const ProductDetailPage = () => {
         if (productResponse.success) {
           setProduct(productResponse.product);
           console.log('✅ Product loaded:', productResponse.product);
-          console.log('🖼️ Product images:', productResponse.product.images);
-          console.log('📊 Images count:', productResponse.product.images?.length);
         } else {
           console.error('❌ Product not found');
           setProduct(null);
         }
+
+
       } catch (error) {
         console.error('🚨 Error fetching product:', error);
         setProduct(null);
@@ -57,6 +58,8 @@ const ProductDetailPage = () => {
       fetchProductData();
     }
   }, [productId]);
+
+
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -479,25 +482,45 @@ const ProductDetailPage = () => {
 
             {activeTab === 'specifications' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(product.specifications).map(([key, value]) => (
-                  <div key={key} className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                    <span className="font-medium capitalize">{key}:</span>
-                    <span className={isDark ? 'text-gray-300' : 'text-gray-600'}>{value}</span>
-                  </div>
-                ))}
+                {Object.entries(product.specifications).filter(([_, value]) => value).length > 0 ? (
+                  Object.entries(product.specifications)
+                    .filter(([_, value]) => value)
+                    .map(([key, value]) => {
+                      const formatKey = (k) => {
+                        return k
+                          .replace(/([A-Z])/g, ' $1')
+                          .replace(/^./, (str) => str.toUpperCase());
+                      };
+                      
+                      return (
+                        <div key={key} className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                          <span className="font-medium">{formatKey(key)}:</span>
+                          <span className={isDark ? 'text-gray-300' : 'text-gray-600'}>{value}</span>
+                        </div>
+                      );
+                    })
+                ) : (
+                  <p className="text-gray-500 italic col-span-2">No specific technical specifications available for this product.</p>
+                )}
               </div>
             )}
 
             {activeTab === 'features' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {product.features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <FaCheck className="text-green-500 flex-shrink-0" />
-                    <span className={isDark ? 'text-gray-300' : 'text-gray-700'}>{feature}</span>
-                  </div>
-                ))}
+                {product.features?.length > 0 ? (
+                  product.features.map((feature, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <FaCheck className="text-green-500 flex-shrink-0" />
+                      <span className={isDark ? 'text-gray-300' : 'text-gray-700'}>{feature}</span>
+                    </div>
+                  ))
+                ) : (
+                   <p className="text-gray-500 italic col-span-2">No special features listed for this product.</p>
+                )}
               </div>
             )}
+
+
           </div>
         </div>
 

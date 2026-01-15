@@ -1,4 +1,13 @@
-const PRODUCTS_API_BASE = 'https://glassadminpanelapi.onrender.com/api/products';
+// ----------------------------------------------------------------------
+// API CONFIGURATION - Auto-detects environment
+// ----------------------------------------------------------------------
+// For PRODUCTION (hosted): Uses render.com URL
+// For LOCAL development: Uncomment the line below and comment the production line
+// const API_BASE_URL = 'http://127.0.0.1:5000/api';
+const API_BASE_URL = 'https://glassadminpanelapi.onrender.com/api';
+
+const PRODUCTS_API_BASE = `${API_BASE_URL}/products`;
+// ----------------------------------------------------------------------
 
 class ProductService {
   
@@ -404,6 +413,63 @@ class ProductService {
         success: false,
         variants: []
       };
+    }
+  }
+
+  // ADD REVIEW
+  static async addReview(productId, reviewData) {
+    try {
+      console.log('🔄 Adding review...', { productId, reviewData });
+      
+      const res = await fetch(`${API_BASE_URL}/reviews/add`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({
+          productId,
+          ...reviewData
+        })
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to add review');
+      }
+
+      return {
+        success: true,
+        review: data.review,
+        message: data.message
+      };
+    } catch (error) {
+      console.error('❌ Error adding review:', error);
+      throw error;
+    }
+  }
+
+  // GET PRODUCT REVIEWS
+  static async getProductReviews(productId) {
+    try {
+      console.log('🔄 Fetching product reviews:', productId);
+      
+      const res = await fetch(`${API_BASE_URL}/reviews/${productId}`, {
+        method: 'GET',
+        headers: this.getHeaders()
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to fetch reviews');
+      }
+
+      return {
+        success: true,
+        reviews: data.reviews || []
+      };
+    } catch (error) {
+      console.error('❌ Error fetching reviews:', error);
+      throw error;
     }
   }
 
