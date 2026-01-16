@@ -25,8 +25,12 @@ const ProductDetailPage = () => {
   const [buyingNow, setBuyingNow] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [newReviewRating, setNewReviewRating] = useState(0);
 
 
+
+  const [reviews, setReviews] = useState([]);
+  const [ratingStats, setRatingStats] = useState({ average: 0, total: 0 });
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -40,12 +44,21 @@ const ProductDetailPage = () => {
         if (productResponse.success) {
           setProduct(productResponse.product);
           console.log('✅ Product loaded:', productResponse.product);
+          
+          // Fetch Reviews
+          const reviewsResponse = await ProductService.getProductReviews(productId);
+          if (reviewsResponse.success) {
+            setReviews(reviewsResponse.reviews);
+            setRatingStats({
+              average: reviewsResponse.averageRating,
+              total: reviewsResponse.totalReviews
+            });
+            console.log('✅ Reviews loaded:', reviewsResponse);
+          }
         } else {
           console.error('❌ Product not found');
           setProduct(null);
         }
-
-
       } catch (error) {
         console.error('🚨 Error fetching product:', error);
         setProduct(null);
@@ -252,10 +265,10 @@ const ProductDetailPage = () => {
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
-                    <FaStar key={i} className={i < Math.floor(product.rating) ? 'text-yellow-400' : 'text-gray-300'} />
+                    <FaStar key={i} className={i < Math.round(ratingStats.average || 0) ? 'text-yellow-400' : 'text-gray-300'} />
                   ))}
                 </div>
-                <span className="text-sm text-gray-500">({product.reviews} reviews)</span>
+                <span className="text-sm text-gray-500">({ratingStats.total || 0} reviews)</span>
               </div>
 
               {/* Price */}
@@ -455,7 +468,7 @@ const ProductDetailPage = () => {
         {/* Product Details Tabs */}
         <div className={`${isDark ? 'bg-gray-900' : 'bg-gray-50'} rounded-xl p-6 mb-16`}>
           <div className="flex gap-6 mb-6 border-b">
-            {['description', 'specifications', 'features'].map((tab) => (
+            {['description', 'specifications', 'features', 'reviews'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -521,6 +534,152 @@ const ProductDetailPage = () => {
             )}
 
 
+
+            {/* Reviews Tab Content */}
+            {activeTab === 'reviews' && (
+              <div className="space-y-8">
+                {/* 1. Write a Review Form */}
+                <div className={`p-6 rounded-xl border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                  <h3 className="text-lg font-bold mb-4">Write a Review</h3>
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    
+                    if(newReviewRating === 0) {
+                      alert("Please select a star rating");
+                      return;
+                    }
+
+                    const name = e.target.name.value;
+                    const comment = e.target.comment.value;
+                    const reviewData = { user: name, rating: newReviewRating, comment };
+
+                    try {
+                      await ProductService.addReview(product.id, reviewData);
+                      alert("Thank you! Your review has been submitted.");
+                      e.target.reset();
+                      setNewReviewRating(0);
+                      // Refresh reviews
+                      const response = await ProductService.getProductReviews(product.id);
+                      if (response.success) {
+                        setReviews(response.reviews);
+                        setRatingStats({
+                          average: response.averageRating,
+                          total: response.totalReviews
+                        });
+                      }
+                    } catch (error) {
+                      console.error("Error submitting review:", error);
+                      alert("Failed to submit review. Please try again.");
+                    }
+                  }}>
+                    <div className="space-y-4">
+                      {/* Star Rating Select */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Your Rating</label>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setNewReviewRating(star)}
+                              className="text-2xl transition-colors focus:outline-none"
+                            >
+                              <FaStar className={star <= newReviewRating ? 'text-yellow-400' : 'text-gray-300'} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Name Input */}
+                      <div>
+                        <label htmlFor="name" className="block text-sm font-medium mb-1">Your Name</label>
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          required
+                          className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-[#862b2a] focus:border-transparent outline-none transition-all ${
+                            isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                          }`}
+                          placeholder="John Doe"
+                        />
+                      </div>
+
+                      {/* Comment Input */}
+                      <div>
+                        <label htmlFor="comment" className="block text-sm font-medium mb-1">Your Review</label>
+                        <textarea
+                          id="comment"
+                          name="comment"
+                          rows="4"
+                          required
+                          className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-[#862b2a] focus:border-transparent outline-none transition-all resize-none ${
+                            isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                          }`}
+                          placeholder="Share your experience with this product..."
+                        ></textarea>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="bg-[#862b2a] hover:bg-[#6b1f1e] text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                      >
+                        Submit Review
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* 2. Reviews Header & List */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold">Customer Reviews</h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-[#862b2a]">{ratingStats.average || 0}</span>
+                      <div className="flex text-yellow-500">
+                        {[...Array(5)].map((_, i) => (
+                          <FaStar key={i} className={i < Math.round(ratingStats.average || 0) ? 'fill-current' : 'text-gray-300'} />
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-500">Based on {ratingStats.total || 0} reviews</span>
+                    </div>
+                  </div>
+
+                  {/* Dynamic Review List */}
+                  {reviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {reviews.map((review, idx) => (
+                        <div key={idx} className={`p-4 rounded-lg border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${isDark ? 'bg-gray-600' : 'bg-gray-400'}`}>
+                                {(review.user || "A").charAt(0)}
+                              </div>
+                              <div>
+                                <p className="font-semibold text-sm">{review.user}</p>
+                                <p className="text-xs text-gray-500">
+                                  {new Date(review.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex text-yellow-400 text-xs">
+                              {[...Array(5)].map((_, i) => (
+                                <FaStar key={i} className={i < review.rating ? 'fill-current' : 'text-gray-300'} />
+                              ))}
+                            </div>
+                          </div>
+                          <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {review.comment}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 italic">No reviews yet. Be the first to review!</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
