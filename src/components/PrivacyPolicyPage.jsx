@@ -26,9 +26,11 @@ const PrivacyPolicyPage = () => {
           <p className={`text-xl ${isDark ? 'text-gray-400' : 'text-gray-600'} max-w-3xl mx-auto`}>
             Your privacy matters to us. Learn how we protect and handle your personal information.
           </p>
-          {/* <div className={`mt-6 inline-flex items-center px-4 py-2 rounded-full ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
-            <span className="text-sm font-medium">Last Updated: December 15, 2025</span>
-          </div> */}
+          <div className={`mt-6 inline-flex items-center px-4 py-2 rounded-full ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+            <span className="text-sm font-medium">
+              Last Updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
