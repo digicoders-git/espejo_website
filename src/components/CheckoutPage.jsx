@@ -590,24 +590,24 @@ const CheckoutPage = () => {
               </div>
             </label>
             
-            <label className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition ${
+            {/* <label className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition ${
               paymentMethod === 'cod' 
                 ? 'border-orange-500 bg-orange-50 text-black' 
                 : isDark ? 'border-gray-700 hover:border-gray-600' : 'border-gray-200 hover:border-gray-300'
-            }`}>
-              <input
+            }`}> */}
+              {/* <input
                 type="radio"
                 value="cod"
                 checked={paymentMethod === 'cod'}
                 onChange={(e) => setPaymentMethod(e.target.value)}
                 className="accent-orange-500"
               />
-              <FaMoneyBillWave className="text-green-500 text-lg sm:text-xl" />
-              <div>
+              <FaMoneyBillWave className="text-green-500 text-lg sm:text-xl" /> */}
+              {/* <div>
                 <p className="font-semibold text-sm sm:text-base">Cash on Delivery</p>
                 <p className="text-xs sm:text-sm opacity-70">Pay when your order is delivered</p>
-              </div>
-            </label>
+              </div> */}
+            {/* </label> */}
           </div>
         </div>
 
