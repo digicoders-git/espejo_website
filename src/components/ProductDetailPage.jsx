@@ -45,15 +45,20 @@ const ProductDetailPage = () => {
           setProduct(productResponse.product);
           console.log('✅ Product loaded:', productResponse.product);
           
-          // Fetch Reviews
-          const reviewsResponse = await ProductService.getProductReviews(productId);
-          if (reviewsResponse.success) {
-            setReviews(reviewsResponse.reviews);
-            setRatingStats({
-              average: reviewsResponse.averageRating,
-              total: reviewsResponse.totalReviews
-            });
-            console.log('✅ Reviews loaded:', reviewsResponse);
+          // Fetch Reviews (Fail-safe)
+          try {
+            const reviewsResponse = await ProductService.getProductReviews(productId);
+            if (reviewsResponse.success) {
+              setReviews(reviewsResponse.reviews);
+              setRatingStats({
+                average: reviewsResponse.averageRating,
+                total: reviewsResponse.totalReviews
+              });
+              console.log('✅ Reviews loaded:', reviewsResponse);
+            }
+          } catch (reviewError) {
+            console.warn('⚠ Could not fetch reviews (Backend might be updating):', reviewError);
+            // Non-critical error, do not block product loading
           }
         } else {
           console.error('❌ Product not found');
