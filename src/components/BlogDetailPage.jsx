@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
-import { FaArrowLeft, FaCalendarAlt, FaUser, FaClock, FaEye, FaHeart, FaTag } from 'react-icons/fa';
+import { FaArrowLeft, FaCalendarAlt, FaUser, FaClock, FaEye, FaHeart, FaTag, FaLinkedin, FaInstagram } from 'react-icons/fa';
 import PageLoader from './PageLoader';
 
 const BLOG_API = "https://glassadminpanelapi.onrender.com/api/blogs";
@@ -216,8 +216,8 @@ const BlogDetailPage = () => {
           </div>
         )}
 
-        {/* Like Button */}
-        <div className={`flex items-center justify-center py-6 md:py-8 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+        {/* Like Button & Social Share */}
+        <div className={`flex flex-col items-center gap-6 py-6 md:py-8 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
           <button
             onClick={handleLike}
             className={`flex items-center gap-2 md:gap-3 px-4 md:px-6 py-2 md:py-3 rounded-full font-semibold transition-all transform hover:scale-105 ${
@@ -231,6 +231,39 @@ const BlogDetailPage = () => {
             <FaHeart size={14} className={liked ? 'text-white' : ''} />
             <span className="text-sm md:text-base">{blog.likes} Likes</span>
           </button>
+
+          <div className="flex items-center gap-4">
+            <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Share on:</span>
+            
+            {/* LinkedIn Share */}
+            <button
+              onClick={() => {
+                const url = encodeURIComponent(window.location.href);
+                const title = encodeURIComponent(blog.title);
+                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+              }}
+              className="p-3 rounded-full bg-[#0077b5] text-white hover:opacity-90 transition-opacity"
+              title="Share on LinkedIn"
+            >
+              <FaLinkedin size={18} />
+            </button>
+
+            {/* Instagram (Copy Link / Open App) */}
+            <button
+              onClick={() => {
+                // Since Instagram doesn't support direct web sharing via URL, we copy the link
+                navigator.clipboard.writeText(window.location.href);
+                toast.success('Link copied! You can now paste it on Instagram.');
+                setTimeout(() => {
+                  window.open('https://www.instagram.com/', '_blank');
+                }, 1000);
+              }}
+              className="p-3 rounded-full bg-gradient-to-tr from-[#f09433] via-[#bc1888] to-[#285AEB] text-white hover:opacity-90 transition-opacity"
+              title="Copy Link for Instagram"
+            >
+              <FaInstagram size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Back to Top Button */}
