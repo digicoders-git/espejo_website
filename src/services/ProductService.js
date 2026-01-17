@@ -2,7 +2,7 @@
 // API CONFIGURATION - Auto-detects environment
 // ----------------------------------------------------------------------
 // For PRODUCTION (hosted): Uses render.com URL
-const API_BASE_URL = 'https://glassadminpanelapi.onrender.com/api';
+const API_BASE_URL = 'https://glassadminpanelapi-zvz4.onrender.com/api';
 // For LOCAL development:
 // const API_BASE_URL = 'http://localhost:5000/api';
 
