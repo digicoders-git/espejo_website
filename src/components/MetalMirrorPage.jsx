@@ -104,7 +104,7 @@ const MetalMirrorPage = () => {
         <div className="relative z-10 text-center px-6 animate-fade-in-blur">
            <p className="text-[9px] font-bold uppercase tracking-[0.6em] mb-3 opacity-40">Artistic Expressions</p>
            <h1 className="text-3xl md:text-5xl font-light tracking-[0.2em] mb-6 uppercase leading-tight font-serif italic text-[#862b2a]">
-              The Metal <span className="not-italic font-bold font-sans text-current tracking-tighter shadow-sm">Collection</span>
+              The Collection 
            </h1>
            <div className="flex items-center justify-center gap-2 opacity-20">
               <span className="w-12 h-[1px] bg-current"></span>
