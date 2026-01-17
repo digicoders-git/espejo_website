@@ -25,6 +25,59 @@ class ProductService {
     return headers;
   }
 
+  // Calculate Final Price with Offer (Same logic as Admin)
+  static calculateFinalPriceWithOffer(price, discountPercent, offer) {
+    const basePrice = Number(price) || 0;
+    const prodDisc = Number(discountPercent) || 0;
+
+    let afterProdDisc = basePrice;
+    let prodDiscAmount = 0;
+
+    // 1. Apply Product Discount
+    if (prodDisc > 0) {
+      prodDiscAmount = (basePrice * prodDisc) / 100;
+      afterProdDisc = basePrice - prodDiscAmount;
+    }
+
+    let offerDiscAmount = 0;
+    let appliedOffer = null;
+
+    // 2. Apply Offer Discount (if valid)
+    if (offer && offer.isActive) {
+      // Check min order amount
+      if (!offer.minOrderAmount || afterProdDisc >= offer.minOrderAmount) {
+        appliedOffer = offer;
+        if (offer.discountType === "percentage") {
+          const val = Number(offer.discountValue) || 0;
+          offerDiscAmount = (afterProdDisc * val) / 100;
+          // Cap at max discount
+          if (
+            offer.maxDiscountAmount &&
+            offerDiscAmount > offer.maxDiscountAmount
+          ) {
+            offerDiscAmount = offer.maxDiscountAmount;
+          }
+        } else {
+          // Flat
+          offerDiscAmount = Number(offer.discountValue) || 0;
+        }
+      }
+    }
+
+    // Ensure price doesn't go negative
+    const final = Math.max(0, afterProdDisc - offerDiscAmount);
+
+    return {
+      basePrice,
+      prodDiscAmount,
+      offerDiscAmount,
+      finalPrice: Math.round(final),
+      appliedOffer,
+      offerCode: appliedOffer ? appliedOffer.code : null,
+      offerTitle: appliedOffer ? appliedOffer.title : null,
+    };
+  }
+
   // FETCH ALL PRODUCTS
   static async getAllProducts() {
     try {
@@ -178,7 +231,14 @@ class ProductService {
       // Price range filter
       if (filters.minPrice || filters.maxPrice) {
         filteredProducts = filteredProducts.filter(p => {
-          const price = p.finalPrice || p.price;
+          // Calculate dynamic price locally for filtering to be accurate
+          const pricing = this.calculateFinalPriceWithOffer(
+            p.price, 
+            p.discountPercent, 
+            p.offer
+          );
+          const price = pricing.finalPrice;
+          
           const min = filters.minPrice || 0;
           const max = filters.maxPrice || Infinity;
           return price >= min && price <= max;
@@ -245,12 +305,30 @@ class ProductService {
     
     const isInStock = stockValue > 0;
     
+
+    // Calculate precise final price with offers
+    const pricing = this.calculateFinalPriceWithOffer(
+      product.price, 
+      product.discountPercent, 
+      product.offer
+    );
+
     const baseData = {
       id: product._id,
       name: product.name,
-      price: product.finalPrice || product.price,
-      originalPrice: product.discountPercent ? product.price : null,
+      price: pricing.finalPrice, // This is the actual final price to pay
+      originalPrice: (pricing.prodDiscAmount > 0 || pricing.offerDiscAmount > 0) ? product.price : null,
       discount: product.discountPercent || 0,
+      
+      // Pass full offer details
+      offer: pricing.appliedOffer ? {
+        title: pricing.appliedOffer.title,
+        code: pricing.appliedOffer.code,
+        discountType: pricing.appliedOffer.discountType,
+        discountValue: pricing.appliedOffer.discountValue,
+        savings: pricing.offerDiscAmount
+      } : null,
+
       category: product.category?.name || 'Mirror',
       image: product.mainImage?.url || product.mainImage || 'https://via.placeholder.com/300x300',
       images: [
@@ -322,9 +400,17 @@ class ProductService {
   static sortProducts(products, sortBy) {
     switch (sortBy) {
       case 'price_low_high':
-        return products.sort((a, b) => (a.finalPrice || a.price) - (b.finalPrice || b.price));
+        return products.sort((a, b) => {
+          const priceA = this.calculateFinalPriceWithOffer(a.price, a.discountPercent, a.offer).finalPrice;
+          const priceB = this.calculateFinalPriceWithOffer(b.price, b.discountPercent, b.offer).finalPrice;
+          return priceA - priceB;
+        });
       case 'price_high_low':
-        return products.sort((a, b) => (b.finalPrice || b.price) - (a.finalPrice || a.price));
+        return products.sort((a, b) => {
+          const priceA = this.calculateFinalPriceWithOffer(a.price, a.discountPercent, a.offer).finalPrice;
+          const priceB = this.calculateFinalPriceWithOffer(b.price, b.discountPercent, b.offer).finalPrice;
+          return priceB - priceA;
+        });
       case 'name_a_z':
         return products.sort((a, b) => a.name.localeCompare(b.name));
       case 'name_z_a':

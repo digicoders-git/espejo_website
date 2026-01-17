@@ -68,9 +68,22 @@ const ProductCard = ({ product, onClick, isDark, showActions = true, size = 'med
       >
         {/* Discount Badge */}
         {discountPercent > 0 && (
-          <div className="absolute top-3 left-3 z-10">
+          <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1">
             <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
               {discountPercent}% OFF
+            </span>
+            {/* Offer Badge */}
+            {product.offer && (
+              <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md animate-pulse">
+                {product.offer.code} APPLIED
+              </span>
+            )}
+          </div>
+        )}
+        {!discountPercent && product.offer && (
+          <div className="absolute top-3 left-3 z-10">
+            <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md animate-pulse">
+              {product.offer.code} APPLIED
             </span>
           </div>
         )}

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
-import { FaArrowLeft, FaHeart, FaShoppingCart, FaStar, FaCheck, FaShippingFast, FaShieldAlt, FaUndo, FaPhone, FaWhatsapp, FaExpand } from 'react-icons/fa';
+import { FaArrowLeft, FaHeart, FaShoppingCart, FaStar, FaCheck, FaShippingFast, FaShieldAlt, FaUndo, FaPhone, FaWhatsapp, FaExpand, FaTags } from 'react-icons/fa';
 import { ImSpinner8 } from 'react-icons/im';
 import PageLoader from './PageLoader';
 import ProductService from '../services/ProductService';
@@ -283,6 +283,30 @@ const ProductDetailPage = () => {
                   <span className="text-xl text-gray-400 line-through">₹{product.originalPrice.toLocaleString()}</span>
                 )}
               </div>
+              
+              {/* Dynamic Offer Display */}
+              {product.offer && (
+                <div className={`mb-6 p-4 rounded-xl border ${isDark ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200'}`}>
+                  <div className="flex items-start gap-3">
+                    <FaTags className="text-blue-500 mt-1" />
+                    <div>
+                      <h3 className="font-bold text-blue-600 dark:text-blue-400">
+                        {product.offer.title} <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 ml-2">{product.offer.code}</span>
+                      </h3>
+                      <p className={`text-sm mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        {product.offer.discountType === 'percentage' 
+                          ? `Get extra ${product.offer.discountValue}% OFF on this product.` 
+                          : `Get flat ₹${product.offer.discountValue} OFF on this product.`}
+                      </p>
+                      {product.offer.savings > 0 && (
+                        <p className="text-xs font-bold text-green-500 mt-2">
+                          You save additional ₹{product.offer.savings.toLocaleString()} with this offer!
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Product Options */}
