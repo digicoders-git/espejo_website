@@ -7,22 +7,9 @@ import { useTheme } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import PageLoader from "./PageLoader";
+import ProductService from "../services/ProductService";
 
-/* ================= DUMMY DATA (FALLBACK) ================= */
-const dummyData = [
-  {
-    id: "d1",
-    img: "https://via.placeholder.com/400",
-    title: "Sample LED Mirror",
-    reviews: 0,
-    rating: 5,
-    oldPrice: "₹15000",
-    newPrice: "₹12000",
-    price: "₹12000",
-  },
-];
-
-const BestSeller = ({ onBuyNow }) => {
+const BestSeller = ({ onBuyNow, minRating = 0 }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { isDark } = useTheme();
@@ -61,56 +48,34 @@ const BestSeller = ({ onBuyNow }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // console.log("🔄 Starting API fetch...");
-        const res = await fetch(
-          "https://glassadminpanelapi.onrender.com/api/products"
-        );
-
-        // console.log("📡 API Response Status:", res.status, res.statusText);
+        const response = await ProductService.getFeaturedProducts(8, minRating);
         
-        if (!res.ok) {
-          throw new Error(`HTTP Error: ${res.status}`);
-        }
-
-        const data = await res.json();
-        // console.log("📊 API DATA 👉", data);
-        // console.log("📊 Products array:", data?.products);
-        // console.log("📊 Products length:", data?.products?.length);
-
-        if (data?.products?.length > 0) {
-          // console.log("✅ Processing products...");
-          const mappedProducts = data.products.map((p, index) => {
-            // console.log(`Product ${index}:`, p);
-            return {
-              id: p._id || `api-${index}`,
-              img: p.mainImage?.url || "https://via.placeholder.com/400",
-              title: p.name,
-              reviews: 0,
-              rating: 5,
-              oldPrice: p.discountPercent ? `₹${p.price}` : "",
-              newPrice: `₹${p.finalPrice || p.price}`,
-              price: `₹${p.finalPrice || p.price}`, 
-            };
-          });
-
-          // console.log("🎯 Mapped products:", mappedProducts);
-          setProducts(mappedProducts.slice(0, 8));
+        if (response.success && response.products.length > 0) {
+          const mappedProducts = response.products.map(p => ({
+            id: p.id,
+            img: p.image,
+            title: p.name,
+            reviews: p.reviews || 0,
+            rating: p.rating || 0,
+            oldPrice: p.originalPrice ? `₹${p.originalPrice}` : "",
+            newPrice: typeof p.price === 'number' ? `₹${p.price}` : p.price,
+            price: typeof p.price === 'number' ? `₹${p.price}` : p.price,
+            inStock: p.inStock
+          }));
+          setProducts(mappedProducts);
         } else {
-          // console.log("❌ No products found in API response");
-          setProducts(dummyData);
+          setProducts([]);
         }
       } catch (error) {
-        // console.error("🚨 Fetch error:", error.message);
-        // console.error("🚨 Full error:", error);
-        setProducts(dummyData);
+        console.error("Error fetching bestseller products:", error);
+        setProducts([]);
       } finally {
-        // console.log("✅ Fetch completed");
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [minRating]);
 
   if (loading) {
     return <PageLoader />;
@@ -202,7 +167,7 @@ const BestSeller = ({ onBuyNow }) => {
                   </p>
                 )}
                 <p className="font-bold text-base text-[#a76665]">
-                  From {item.newPrice}
+                  {item.newPrice}
                 </p>
               </div>
 

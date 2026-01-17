@@ -1,6 +1,4 @@
-// ----------------------------------------------------------------------
-// API CONFIGURATION - Auto-detects environment
-// ----------------------------------------------------------------------
+
 // For PRODUCTION (hosted): Uses render.com URL
 const API_BASE_URL = 'https://glassadminpanelapi-zvz4.onrender.com/api';
 // For LOCAL development:
@@ -264,7 +262,7 @@ class ProductService {
   }
 
   // GET FEATURED/BESTSELLER PRODUCTS
-  static async getFeaturedProducts(limit = 8) {
+  static async getFeaturedProducts(limit = 8, minRating = 0) {
     try {
       console.log('🔄 Fetching featured products...');
       
@@ -272,7 +270,11 @@ class ProductService {
       
       // Get products with highest ratings or most recent
       const featuredProducts = products
-        .filter(p => p.stock > 0) // Only in-stock products
+        .filter(p => {
+          const stock = p.stock !== undefined ? p.stock : 50;
+          const rating = p.averageRating || 0;
+          return stock > 0 && rating >= minRating;
+        })
         .sort((a, b) => {
           // Sort by discount percentage first, then by creation date
           const discountA = a.discountPercent || 0;
@@ -344,8 +346,8 @@ class ProductService {
       ].filter(Boolean),
       inStock: isInStock,
       stock: stockValue,
-      rating: 4.8,
-      reviews: Math.floor(Math.random() * 200) + 50,
+      rating: product.averageRating || 0,
+      reviews: product.totalReviews || 0,
       sizes: product.sizes || [],
       colors: product.colors || [],
       addOns: product.addOns || [],
@@ -549,9 +551,18 @@ class ProductService {
         throw new Error(data.message || 'Failed to fetch reviews');
       }
 
+      const reviews = data.reviews || [];
+      const totalReviews = reviews.length;
+      
+      // Calculate average rating
+      const totalRating = reviews.reduce((sum, review) => sum + Number(review.rating), 0);
+      const averageRating = totalReviews > 0 ? (totalRating / totalReviews).toFixed(1) : 0;
+
       return {
         success: true,
-        reviews: data.reviews || []
+        reviews: reviews,
+        totalReviews: totalReviews,
+        averageRating: Number(averageRating)
       };
     } catch (error) {
       console.error('❌ Error fetching reviews:', error);

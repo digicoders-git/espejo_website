@@ -145,13 +145,13 @@ const ProductCard = ({ product, onClick, isDark, showActions = true, size = 'med
               {[...Array(5)].map((_, i) => (
                 <FaStar 
                   key={i} 
-                  className={i < Math.floor(product.rating || 4.8) ? 'text-yellow-400' : 'text-gray-300'} 
+                  className={i < Math.floor(product.rating || 0) ? 'text-yellow-400' : 'text-gray-300'} 
                   size={12} 
                 />
               ))}
             </div>
             <span className="text-xs text-gray-500">
-              ({product.reviews || Math.floor(Math.random() * 200) + 50})
+              ({product.reviews || 0})
             </span>
           </div>
           
