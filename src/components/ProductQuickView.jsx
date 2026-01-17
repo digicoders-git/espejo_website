@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { FaTimes, FaHeart, FaShoppingCart, FaStar, FaCheck, FaExpand, FaEye } from 'react-icons/fa';
+import { 
+  FaTimes, FaHeart, FaShoppingCart, FaStar, FaCheck, FaInfoCircle, 
+  FaTools, FaShieldAlt, FaTruck, FaGem, FaRedoAlt, FaLeaf, FaBoxOpen
+} from 'react-icons/fa';
 import { ImSpinner8 } from 'react-icons/im';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useTheme } from '../context/ThemeContext';
-import { useNavigate } from 'react-router-dom';
 import ProductService from '../services/ProductService';
 
 const ProductQuickView = ({ productId, isOpen, onClose }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { isDark } = useTheme();
-  const navigate = useNavigate();
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [activeTab, setActiveTab] = useState('description');
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
-  const [buyingNow, setBuyingNow] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -32,6 +33,7 @@ const ProductQuickView = ({ productId, isOpen, onClose }) => {
           setProduct(response.product);
           setSelectedImage(0);
           setQuantity(1);
+          setActiveTab('description');
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -43,9 +45,9 @@ const ProductQuickView = ({ productId, isOpen, onClose }) => {
     fetchProduct();
   }, [productId, isOpen]);
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (e) => {
+    if (e) e.stopPropagation();
     if (!product) return;
-    
     setAddingToCart(true);
     try {
       await addToCart({
@@ -56,254 +58,253 @@ const ProductQuickView = ({ productId, isOpen, onClose }) => {
         quantity: quantity
       });
     } finally {
-      setAddingToCart(false);
+      setTimeout(() => setAddingToCart(false), 500);
     }
   };
 
-  const handleBuyNow = () => {
+  const handleWishlistToggle = (e) => {
+    if (e) e.stopPropagation();
     if (!product) return;
-    
-    setBuyingNow(true);
-    setTimeout(() => {
-      onClose();
-      navigate('/checkout', {
-        state: {
-          buyNowItem: {
-            id: product.id,
-            title: product.name,
-            price: `₹${product.price}`,
-            img: product.images[0],
-            quantity: quantity
-          }
-        }
-      });
-    }, 500);
-  };
-
-  const handleWishlistToggle = () => {
-    if (!product) return;
-    
-    const wishlistItem = {
+    const item = {
       id: product.id,
       title: product.name,
       price: `₹${product.price}`,
       img: product.images[0]
     };
-
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(wishlistItem);
-    }
-  };
-
-  const handleViewFullDetails = () => {
-    onClose();
-    navigate(`/product/${productId}`);
+    isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist(item);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className={`${isDark ? 'bg-gray-900 text-white' : 'bg-white text-black'} rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto`}>
-        
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-bold" style={{color: '#862b2a'}}>Quick View</h2>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-full hover:bg-gray-100 ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors`}
-          >
-            <FaTimes size={20} />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md p-2 md:p-10 animate-fade-in overflow-hidden">
+      {/* Modal Container */}
+      <div 
+        className={`relative w-full max-w-6xl max-h-[95vh] flex flex-col md:flex-row overflow-hidden rounded-3xl shadow-2xl animate-scale-up ${
+          isDark ? 'bg-[#0a0a0a] text-white border border-white/10' : 'bg-white text-black'
+        }`}
+      >
+        {/* Close Button Mobile/Global */}
+        <button 
+          onClick={onClose}
+          className={`absolute top-4 right-4 z-[60] p-3 rounded-full shadow-lg transition-all hover:rotate-90 active:scale-95 ${
+            isDark ? 'bg-white/10 text-white hover:bg-[#862b2a]' : 'bg-black/5 text-black hover:bg-[#862b2a] hover:text-white'
+          }`}
+        >
+          <FaTimes size={18} />
+        </button>
 
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <ImSpinner8 className="animate-spin text-[#862b2a]" size={40} />
+          <div className="w-full min-h-[400px] flex flex-col items-center justify-center">
+            <ImSpinner8 className="animate-spin text-[#862b2a]" size={60} />
+            <p className="mt-6 text-xs uppercase tracking-[0.3em] font-bold opacity-40">Loading Excellence</p>
           </div>
         ) : product ? (
-          <div className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              
-              <div className="space-y-4">
-                <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
-                  <img
-                    src={product.images[selectedImage]}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => e.target.src = 'https://via.placeholder.com/600x600'}
-                  />
-                  <button 
-                    onClick={handleViewFullDetails}
-                    className="absolute top-4 right-4 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:scale-110 transition-transform"
-                    title="View Full Details"
-                  >
-                    <FaExpand />
-                  </button>
-                </div>
-                
-                {product.images.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto">
-                    {product.images.map((image, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImage(index)}
-                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
-                          selectedImage === index 
-                            ? 'border-[#862b2a]' 
-                            : 'border-gray-200 dark:border-gray-700'
-                        }`}
-                      >
-                        <img
-                          src={image}
-                          alt={`${product.name} ${index + 1}`}
-                          className="w-full h-full object-cover"
-                          onError={(e) => e.target.src = 'https://via.placeholder.com/64x64'}
-                        />
-                      </button>
-                    ))}
-                  </div>
+          <>
+            {/* Left Column: Media Gallery (Fixed height or scroll on mobile) */}
+            <div className={`w-full md:w-5/12 p-4 md:p-10 flex flex-col items-center bg-opacity-30 border-r ${isDark ? 'bg-black/40 border-white/5' : 'bg-gray-50 border-black/5 overflow-y-auto'}`}>
+              <div className="w-full relative aspect-square rounded-2xl overflow-hidden bg-black/5 dark:bg-white/5 group shadow-inner">
+                <img
+                  src={product.images[selectedImage]}
+                  alt={product.name}
+                  className="w-full h-full object-contain p-4 transition-transform duration-1000 group-hover:scale-110"
+                />
+                {product.discountPercent > 0 && (
+                   <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-xl">
+                      -{product.discountPercent}%
+                   </div>
                 )}
               </div>
 
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-medium px-2 py-1 rounded-full" style={{backgroundColor: '#862b2a20', color: '#862b2a'}}>
-                      {product.category}
-                    </span>
-                    {product.discount > 0 && (
-                      <span className="text-sm font-medium px-2 py-1 bg-red-100 text-red-600 rounded-full">
-                        {product.discount}% OFF
-                      </span>
-                    )}
-                  </div>
-                  <h1 className="text-2xl font-bold mb-4">{product.name}</h1>
-                  
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <FaStar key={i} className={i < Math.floor(product.rating) ? 'text-yellow-400' : 'text-gray-300'} size={16} />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-500">({product.reviews} reviews)</span>
-                  </div>
-
-                  <div className="flex items-center gap-4 mb-6">
-                    <span className="text-2xl font-bold" style={{color: '#862b2a'}}>₹{product.price.toLocaleString()}</span>
-                    {product.originalPrice && (
-                      <span className="text-lg text-gray-400 line-through">₹{product.originalPrice.toLocaleString()}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${product.inStock ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className={`font-medium ${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                    {product.inStock ? `In Stock (${product.stock} available)` : 'Out of Stock'}
-                  </span>
-                </div>
-
-                <div>
-                  <p className={`${isDark ? 'text-gray-300' : 'text-gray-700'} leading-relaxed line-clamp-3`}>
-                    {product.description}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3">Key Features</h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {product.features.slice(0, 4).map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <FaCheck className="text-green-500 flex-shrink-0" size={12} />
-                        <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <span className="font-medium">Quantity:</span>
-                  <div className="flex items-center border rounded-lg">
+              {/* Thumbnails */}
+              {product.images.length > 1 && (
+                <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+                  {product.images.map((img, idx) => (
                     <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all p-0.5 ${
+                        selectedImage === idx ? 'border-[#862b2a] scale-105' : 'border-transparent opacity-40 hover:opacity-100'
+                      }`}
                     >
-                      -
+                      <img src={img} className="w-full h-full object-cover rounded-sm" alt="" />
                     </button>
-                    <span className="px-4 py-2 border-x">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                      className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
+                  ))}
                 </div>
+              )}
 
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleBuyNow}
-                    disabled={!product.inStock || buyingNow}
-                    className="flex-1 bg-[#898383] hover:bg-[#6b6161] text-white py-3 px-4 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {buyingNow ? (
-                      <>
-                        <ImSpinner8 className="animate-spin" size={16} />
-                        Processing...
-                      </>
-                    ) : (
-                      'Buy Now'
-                    )}
-                  </button>
-                  
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={!product.inStock || addingToCart}
-                    className="flex-1 bg-[#862b2a] hover:bg-[#6b1f1e] text-white py-3 px-4 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {addingToCart ? (
-                      <>
-                        <ImSpinner8 className="animate-spin" size={16} />
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <FaShoppingCart size={16} />
-                        Add to Cart
-                      </>
-                    )}
-                  </button>
-                  
-                  <button
-                    onClick={handleWishlistToggle}
-                    className={`p-3 rounded-lg border-2 transition-colors ${
-                      isInWishlist(product.id)
-                        ? 'border-red-500 bg-red-50 text-red-500'
-                        : 'border-gray-300 hover:border-red-500 hover:text-red-500'
-                    }`}
-                  >
-                    <FaHeart size={20} />
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleViewFullDetails}
-                  className="w-full py-2 px-4 border border-[#862b2a] text-[#862b2a] rounded-lg hover:bg-[#862b2a] hover:text-white transition-colors flex items-center justify-center gap-2"
-                >
-                  <FaEye size={16} />
-                  View Full Details
-                </button>
+              {/* Stats & Trust */}
+              <div className="grid grid-cols-2 gap-3 mt-10 w-full">
+                 <div className="flex flex-col items-center p-4 rounded-xl border border-opacity-10" style={{borderColor: '#862b2a'}}>
+                    <FaShieldAlt className="text-[#862b2a] text-xl mb-2" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-center">5 Year<br/>Warranty</span>
+                 </div>
+                 <div className="flex flex-col items-center p-4 rounded-xl border border-opacity-10" style={{borderColor: '#862b2a'}}>
+                    <FaTruck className="text-[#862b2a] text-xl mb-2" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-center">Insured<br/>Shipping</span>
+                 </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex justify-center items-center py-20">
-            <p className="text-gray-500">Product not found</p>
-          </div>
-        )}
+
+            {/* Right Column: Details & Tabs (Scrollable body) */}
+            <div className={`w-full md:w-7/12 p-6 md:p-12 overflow-y-auto no-scrollbar`}>
+              <div className="max-w-xl mx-auto md:mx-0">
+                
+                {/* Header Information */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-3 mb-4">
+                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 bg-[#862b2a] text-white rounded-full">
+                        {product.category}
+                     </span>
+                     <div className="flex items-center gap-1.5 px-3 py-1 bg-yellow-400/10 text-yellow-600 rounded-full">
+                        <FaStar size={10} />
+                        <span className="text-[10px] font-bold">{product.rating || '4.8'}</span>
+                     </div>
+                  </div>
+                  
+                  <h1 className="text-2xl md:text-3xl font-bold mb-4 tracking-tight leading-tight uppercase font-serif">
+                    {product.name}
+                  </h1>
+                  
+                  <div className="flex items-center gap-6 mb-4">
+                     <div className="flex flex-col">
+                        <span className="text-4xl font-bold text-[#862b2a]">₹{product.price.toLocaleString()}</span>
+                        {product.originalPrice > product.price && (
+                          <span className="text-sm opacity-30 line-through decoration-red-500">M.R.P. ₹{product.originalPrice.toLocaleString()}</span>
+                        )}
+                     </div>
+                     <div className={`px-4 py-2 rounded-xl flex items-center gap-2 ${product.inStock ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                        <div className={`w-2 h-2 rounded-full ${product.inStock ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
+                        <span className="text-[10px] font-black uppercase tracking-widest">{product.inStock ? 'Ready for shipping' : 'Out of Stock'}</span>
+                     </div>
+                  </div>
+                </div>
+
+                {/* Content Tabs */}
+                <div className="mb-10">
+                   <div className={`flex gap-8 border-b mb-6 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                      {[
+                        { id: 'description', label: 'Details', icon: <FaInfoCircle /> },
+                        { id: 'specs', label: 'Tech Specs', icon: <FaTools /> },
+                        { id: 'care', label: 'Care', icon: <FaLeaf /> }
+                      ].map(tab => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`flex items-center gap-2 pb-4 text-xs font-bold uppercase tracking-widest transition-all relative ${
+                             activeTab === tab.id ? 'text-[#862b2a] opacity-100' : 'opacity-30 hover:opacity-100'
+                          }`}
+                        >
+                           {tab.icon} {tab.label}
+                           {activeTab === tab.id && <span className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#862b2a] rounded-t-full shadow-[0_0_10px_rgba(134,43,42,0.5)]"></span>}
+                        </button>
+                      ))}
+                   </div>
+
+                   <div className="min-h-[160px] animate-fade-in-up">
+                      {activeTab === 'description' && (
+                        <div className="space-y-4">
+                           <p className="text-sm md:text-base leading-relaxed opacity-70">
+                              {product.description}
+                           </p>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                              {(product.features?.length > 0 ? product.features : ['Reinforced Frame', 'Crystal HD Clarity', 'Anti-Fog Coating']).map((f, i) => (
+                                <div key={i} className="flex items-center gap-3 text-xs font-medium">
+                                   <div className="flex-shrink-0 w-5 h-5 rounded-full border border-[#862b2a] flex items-center justify-center text-[#862b2a]">
+                                      <FaCheck size={8} />
+                                   </div>
+                                   {f}
+                                </div>
+                              ))}
+                           </div>
+                        </div>
+                      )}
+
+                      {activeTab === 'specs' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                           {Object.entries(product.specifications || {}).map(([key, val]) => (
+                             val && (
+                               <div key={key} className="flex flex-col border-b border-white/5 pb-2">
+                                  <span className="text-[10px] uppercase font-bold opacity-30 tracking-widest">{key}</span>
+                                  <span className="text-xs font-semibold">{val}</span>
+                               </div>
+                             )
+                           ))}
+                        </div>
+                      )}
+
+                      {activeTab === 'care' && (
+                        <div className="space-y-4">
+                           {product.careInstructions?.map((c, i) => (
+                              <div key={i} className="flex gap-4 items-start bg-opacity-5 p-3 rounded-lg" style={{backgroundColor: '#862b2a10'}}>
+                                 <FaRedoAlt className="text-[#862b2a] mt-1 shrink-0" size={14} />
+                                 <p className="text-xs font-medium opacity-80">{c}</p>
+                              </div>
+                           ))}
+                        </div>
+                      )}
+                   </div>
+                </div>
+
+                {/* Purchase Area */}
+                <div className={`flex flex-col gap-6 pt-10 border-t ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                   <div className="flex items-center gap-8">
+                      <div className="space-y-2">
+                         <span className="text-[10px] uppercase font-black tracking-widest opacity-40">Select Qty</span>
+                         <div className={`flex items-center rounded-2xl border ${isDark ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'}`}>
+                            <button onClick={() => setQuantity(q => Math.max(1, q-1))} className="px-5 py-3 hover:text-[#862b2a] transition-colors font-bold">-</button>
+                            <span className="px-6 py-3 font-black text-sm">{quantity}</span>
+                            <button onClick={() => setQuantity(q => q+1)} className="px-5 py-3 hover:text-[#862b2a] transition-colors font-bold">+</button>
+                         </div>
+                      </div>
+                      
+                      <div className="flex-1 space-y-2">
+                        <span className="text-[10px] uppercase font-black tracking-widest opacity-40">Final Value</span>
+                        <div className="text-xl font-black text-[#862b2a]">₹{(product.price * quantity).toLocaleString()}</div>
+                      </div>
+                   </div>
+
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button 
+                         onClick={handleAddToCart}
+                         disabled={!product.inStock || addingToCart}
+                         className="flex items-center justify-center gap-3 py-4 rounded-2xl bg-[#862b2a] text-white font-black text-xs uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#862b2a]/20"
+                      >
+                         {addingToCart ? <ImSpinner8 className="animate-spin" size={18} /> : <><FaShoppingCart size={16} /> Add to Cart</>}
+                      </button>
+                      <button 
+                         onClick={handleWishlistToggle}
+                         className={`flex items-center justify-center gap-3 py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all ${
+                            isInWishlist(product.id) ? 'bg-red-500 border-red-500 text-white' : 'border-black/10 dark:border-white/10 opacity-30 hover:opacity-100 hover:border-[#862b2a] hover:text-[#862b2a]'
+                         }`}
+                      >
+                         <FaHeart size={16} /> {isInWishlist(product.id) ? 'Loved' : 'Fav'}
+                      </button>
+                   </div>
+                </div>
+
+                {/* Footer Badges */}
+                <div className="mt-12 flex flex-wrap gap-6 opacity-30 justify-center md:justify-start">
+                   <div className="flex items-center gap-2"><FaBoxOpen size={12} /> <span className="text-[8px] font-bold uppercase tracking-widest">Premium Package</span></div>
+                   <div className="flex items-center gap-2"><FaLayerGroup size={12} /> <span className="text-[8px] font-bold uppercase tracking-widest">Crafted In India</span></div>
+                </div>
+
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scale-up { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+        .animate-scale-up { animation: scale-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}} />
     </div>
   );
 };

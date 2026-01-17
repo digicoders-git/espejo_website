@@ -63,7 +63,7 @@ const Header = ({ onUserClick }) => {
   const Menu = [
     { name: "Home", path: "/" },
     { name: "BestSeller", path: "/bestseller" },
-    { name: "Products", path: "/metal-mirror" },
+    { name: "Categories", path: "/metal-mirror" },
     { name: "About Us", path: "/about" },
     { name: "Contact Us", path: "/contact" },
   ];

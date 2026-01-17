@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { FaStar, FaHeart, FaShoppingCart, FaEye } from 'react-icons/fa';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 import ProductQuickView from './ProductQuickView';
 
 const ProductCard = ({ product, onClick, isDark, showActions = true, size = 'medium', enableQuickView = true }) => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [showQuickView, setShowQuickView] = useState(false);
 
   const handleWishlistClick = (e) => {
@@ -35,10 +37,10 @@ const ProductCard = ({ product, onClick, isDark, showActions = true, size = 'med
   };
 
   const handleViewDetails = (e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     if (enableQuickView) {
       setShowQuickView(true);
-    } else {
+    } else if (onClick) {
       onClick?.(product);
     }
   };
@@ -63,8 +65,8 @@ const ProductCard = ({ product, onClick, isDark, showActions = true, size = 'med
   return (
     <>
       <div
-        onClick={onClick}
-        className={`${sizeClasses[size]} ${isDark ? 'bg-gray-900 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group relative`}
+        onClick={() => navigate(`/product/${product.id}`)}
+        className={`${sizeClasses[size]} ${isDark ? 'bg-[#1a1a1a] text-white' : 'bg-white text-black'} rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer group relative border ${isDark ? 'border-white/5' : 'border-black/5'}`}
       >
         {/* Discount Badge */}
         {discountPercent > 0 && (

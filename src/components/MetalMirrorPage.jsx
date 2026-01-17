@@ -1,196 +1,250 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
+import { FaChevronRight, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 import PageLoader from './PageLoader';
-
-const CATEGORIES_API = "https://glassadminpanelapi.onrender.com/api/categories";
-const PRODUCTS_API = "https://glassadminpanelapi.onrender.com/api/products";
+import ProductService from '../services/ProductService';
+import ProductCard from './ProductCard';
 
 const MetalMirrorPage = () => {
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);
+  const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Predefined categories with fallback data
-  const predefinedCategories = [
-    {
-      id: 'mirror',
-      title: "Mirror",
-      description: "Premium mirrors with elegant designs and superior quality",
-      image: "https://images.unsplash.com/photo-1618220179428-22790b461013?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      route: "/category/mirror",
-      slug: "mirror"
-    },
-    {
-      id: 'console',
-      title: "Console",
-      description: "Premium console tables with modern designs and storage solutions",
-      image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      route: "/category/console",
-      slug: "console"
-    },
-    {
-      id: 'console-mirror',
-      title: "Console + Mirror",
-      description: "Complete console and mirror combinations for elegant interiors",
-      image: "https://images.unsplash.com/photo-1631889993959-41b4e9c6e3c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      route: "/category/console-mirror",
-      slug: "console-mirror"
-    }
-  ];
+  const [activeTabIdx, setActiveTabIdx] = useState(0);
+  
+  const contentContainerRef = useRef(null);
+  const tabContainerRef = useRef(null);
+  const tabRefs = useRef([]);
 
   useEffect(() => {
-    const fetchCategoriesAndProducts = async () => {
+    const fetchEverything = async () => {
       try {
+        setLoading(true);
         const [catRes, prodRes] = await Promise.all([
-          fetch(CATEGORIES_API),
-          fetch(PRODUCTS_API)
+          ProductService.getCategories(),
+          ProductService.getAllProducts()
         ]);
-        
-        const catData = await catRes.json();
-        const prodData = await prodRes.json();
-        
-        if (catRes.ok && prodRes.ok) {
-          // Merge backend categories with predefined ones
-          const backendCategories = catData.categories || [];
-          const products = prodData.products || [];
-          
-          const finalCategories = predefinedCategories.map(predefined => {
-            // Find matching backend category
-            const backendCat = backendCategories.find(cat => 
-              cat.name?.toLowerCase().includes(predefined.title.toLowerCase()) ||
-              cat.slug === predefined.slug
-            );
-            
-            // Count products for this category
-            let productCount = 0;
-            if (predefined.slug === 'mirror') {
-              productCount = products.filter(p => 
-                p.category?.name?.toLowerCase().includes('mirror') &&
-                !p.category?.name?.toLowerCase().includes('console')
-              ).length;
-            } else if (predefined.slug === 'console') {
-              productCount = products.filter(p => 
-                p.category?.name?.toLowerCase().includes('console') &&
-                !p.category?.name?.toLowerCase().includes('mirror')
-              ).length;
-            } else if (predefined.slug === 'console-mirror') {
-              productCount = products.filter(p => {
-                const catName = p.category?.name?.toLowerCase() || '';
-                return catName.includes('console') && catName.includes('mirror');
-              }).length;
-            }
-            
+
+        if (catRes.success && prodRes.success) {
+          const categories = catRes.categories || [];
+          const allProducts = prodRes.products || [];
+
+          const groupedData = categories.map(cat => {
+            const catProducts = allProducts
+              .filter(p => p.category?._id === cat._id)
+              .slice(0, 8)
+              .map(p => ProductService.mapProductData(p, true));
+
             return {
-              ...predefined,
-              _id: backendCat?._id || predefined.id,
-              productCount: `${productCount} Products`,
-              isActive: backendCat?.isActive !== false
+              ...cat,
+              products: catProducts
             };
-          });
-          
-          setCategories(finalCategories);
-        } else {
-          // Fallback to predefined categories
-          setCategories(predefinedCategories.map(cat => ({
-            ...cat,
-            productCount: "Products",
-            isActive: true
-          })));
+          }).filter(cat => cat.products.length > 0);
+
+          setCategoryData(groupedData);
         }
       } catch (error) {
-        // console.error('Categories fetch error:', error);
-        // Fallback to predefined categories
-        setCategories(predefinedCategories.map(cat => ({
-          ...cat,
-          productCount: "Products",
-          isActive: true
-        })));
+        console.error('Error fetching data for MetalMirrorPage:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCategoriesAndProducts();
+    fetchEverything();
   }, []);
 
-  if (loading) {
-    return <PageLoader />;
-  }
+  const handleTabClick = (idx) => {
+    setActiveTabIdx(idx);
+    centerTab(idx);
+    
+    if (contentContainerRef.current) {
+      contentContainerRef.current.scrollTo({
+        left: contentContainerRef.current.offsetWidth * idx,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const centerTab = (idx) => {
+    const tabElement = tabRefs.current[idx];
+    const container = tabContainerRef.current;
+    if (tabElement && container) {
+      const containerWidth = container.offsetWidth;
+      const tabOffsetLeft = tabElement.offsetLeft;
+      const tabWidth = tabElement.offsetWidth;
+      const scrollLeft = tabOffsetLeft - containerWidth / 2 + tabWidth / 2;
+      container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
+  };
+
+  const handleContentScroll = () => {
+    if (!contentContainerRef.current) return;
+    const scrollLeft = contentContainerRef.current.scrollLeft;
+    const width = contentContainerRef.current.offsetWidth;
+    const newIdx = Math.round(scrollLeft / width);
+    if (newIdx !== activeTabIdx && newIdx >= 0 && newIdx < categoryData.length) {
+      setActiveTabIdx(newIdx);
+      centerTab(newIdx);
+    }
+  };
+
+  if (loading) return <PageLoader />;
 
   return (
-    <div className={`${isDark ? 'bg-black' : 'bg-white'} min-h-screen transition-colors duration-200`}>
+    <div className={`min-h-screen transition-colors duration-500 ${isDark ? 'bg-[#020202] text-white' : 'bg-[#ffffff] text-black'} font-sans`}>
+      
+      {/* --- MINIMALIST HERO --- */}
+      <div className="relative h-[40vh] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#862b2a0d] to-transparent"></div>
+          <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] rounded-full blur-[100px] opacity-[0.05] bg-[#862b2a]"></div>
+        </div>
 
-      {/* Category Cards */}
-      <div className="max-w-6xl mx-auto px-6 pb-16">
-        <h2 className={`text-3xl font-bold text-center ${isDark ? 'text-white' : 'text-black'} mb-12`}>Browse Categories</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {categories.map((category) => (
-            <div
-              key={category.id || category._id}
-              onClick={() => navigate(category.route)}
-              className={`${isDark ? 'bg-gray-900 hover:bg-gray-800' : 'bg-gray-100 hover:bg-gray-200'} rounded-xl overflow-hidden shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 ${
-                !category.isActive ? 'opacity-60' : ''
-              }`}
+        <div className="relative z-10 text-center px-6 animate-fade-in-blur">
+           <p className="text-[9px] font-bold uppercase tracking-[0.6em] mb-3 opacity-40">Artistic Expressions</p>
+           <h1 className="text-3xl md:text-5xl font-light tracking-[0.2em] mb-6 uppercase leading-tight font-serif italic text-[#862b2a]">
+              The Metal <span className="not-italic font-bold font-sans text-current tracking-tighter shadow-sm">Collection</span>
+           </h1>
+           <div className="flex items-center justify-center gap-2 opacity-20">
+              <span className="w-12 h-[1px] bg-current"></span>
+              <span className="text-[8px] uppercase tracking-[0.3em]">Since 2024</span>
+              <span className="w-12 h-[1px] bg-current"></span>
+           </div>
+        </div>
+      </div>
+
+      {/* --- ELEVATED TAB NAV --- */}
+      <div className={`sticky top-[70px] z-40 border-b border-t transition-all ${isDark ? 'bg-[#020202]/80 border-white/5' : 'bg-white/80 border-black/5'}`} style={{ backdropFilter: 'blur(30px)' }}>
+         <div className="max-w-7xl mx-auto px-6">
+            <div 
+              ref={tabContainerRef}
+              className="flex items-center justify-center overflow-x-auto no-scrollbar scroll-smooth gap-1 md:gap-4 py-4"
             >
-              <div className="relative h-80">
-                <img
-                  src={category.image}
-                  alt={category.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <div className="text-sm font-medium mb-2" style={{ color: '#a76665' }}>{category.productCount}</div>
-                  <h3 className="text-2xl font-bold mb-2">{category.title}</h3>
-                  <p className="text-gray-200 text-sm leading-relaxed">{category.description}</p>
-                </div>
-                {!category.isActive && (
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
-                    Inactive
-                  </div>
-                )}
-              </div>
-
-              <div className="p-6">
+              {categoryData.map((cat, i) => (
                 <button
-                  className="w-full text-white py-3 rounded-lg font-semibold transition-colors hover:opacity-90"
-                  style={{ backgroundColor: '#a76665' }}
-                  disabled={!category.isActive}
+                  key={cat._id}
+                  ref={el => tabRefs.current[i] = el}
+                  onClick={() => handleTabClick(i)}
+                  className={`group relative flex-shrink-0 px-6 py-2 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-[0.15em] transition-all duration-500 ${
+                    activeTabIdx === i 
+                      ? 'text-white translate-y-[-1px]' 
+                      : 'opacity-30 hover:opacity-100 hover:tracking-[0.25em]'
+                  }`}
                 >
-                  View {category.title} Products
+                  <span className={`relative z-10 transition-colors ${activeTabIdx === i ? 'text-white' : 'text-current'}`}>
+                    {cat.name}
+                  </span>
+                  {activeTabIdx === i && (
+                    <div className="absolute inset-0 bg-[#862b2a] rounded-full shadow-[0_4px_15px_rgba(134,43,42,0.3)] animate-pop-in"></div>
+                  )}
                 </button>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+         </div>
       </div>
 
-      {/* Info Section */}
-      <div className={`${isDark ? 'bg-gray-900' : 'bg-gray-100'} py-16`}>
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-black'} mb-6`}>Why Choose Our Products</h2>
-          <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'} leading-relaxed mb-8`}>
-            Our furniture collection features premium quality materials and modern designs.
-            Each piece is crafted with attention to detail and built to last for years.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold mb-2" style={{ color: '#a76665' }}>5+ Years</div>
-              <div className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Warranty Coverage</div>
+      {/* --- SLIDING CONTENT --- */}
+      <div className="relative overflow-hidden w-full h-full pb-32">
+         {/* Minimal Index Badge */}
+         <div className="absolute top-10 left-10 pointer-events-none opacity-[0.03] select-none font-serif italic text-9xl">
+            {activeTabIdx + 1}
+         </div>
+
+         <div 
+           ref={contentContainerRef}
+           onScroll={handleContentScroll}
+           className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar transition-all"
+         >
+            {categoryData.map((category, idx) => (
+               <div 
+                key={category._id} 
+                className="w-full flex-shrink-0 snap-start px-6 pt-16 md:pt-24"
+               >
+                  <div className="max-w-7xl mx-auto">
+                     {/* Category Header */}
+                     <div className="flex flex-col md:flex-row items-baseline justify-between gap-8 mb-16 px-2">
+                        <div className="animate-reveal-up">
+                           <h2 className="text-2xl md:text-4xl font-bold tracking-tight uppercase mb-4 font-sans">
+                              {category.name}
+                           </h2>
+                           <p className="max-w-xl text-[10px] md:text-[12px] opacity-40 font-medium uppercase tracking-[0.1em] leading-relaxed">
+                              {category.description || 'Crafted with precision, our metal series embodies timeless aesthetics and unmatched quality.'}
+                           </p>
+                        </div>
+                        
+                        <button 
+                          onClick={() => navigate(`/category/${category.slug}`)}
+                          className="group flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.3em] opacity-40 hover:opacity-100 hover:text-[#862b2a] transition-all"
+                        >
+                           Full Collection <FaArrowRight className="transition-transform group-hover:translate-x-2" />
+                        </button>
+                     </div>
+
+                     {/* Grid */}
+                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+                        {category.products.map((product, pIdx) => (
+                           <div key={product.id} className="animate-reveal-up" style={{ animationDelay: `${pIdx * 0.05}s` }}>
+                              <ProductCard product={product} />
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+            ))}
+         </div>
+         
+         {/* Footer Controls */}
+         <div className="max-w-7xl mx-auto px-6 mt-16 flex justify-between items-center opacity-40">
+            <div className="flex items-center gap-4 text-[9px] font-bold uppercase tracking-[0.3em]">
+               <span className="text-[#862b2a]">Collection</span>
+               <span className="w-8 h-[1px] bg-current opacity-20"></span>
+               <span>0{activeTabIdx + 1} of 0{categoryData.length}</span>
             </div>
-            <div>
-              <div className="text-3xl font-bold mb-2" style={{ color: '#a76665' }}>100%</div>
-              <div className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Quality Assured</div>
+            
+            <div className="flex gap-2">
+               <button 
+                onClick={() => handleTabClick(activeTabIdx - 1)}
+                className={`p-3 rounded-full border border-current hover:bg-[#862b2a] hover:text-white transition-all duration-300 disabled:opacity-0 ${activeTabIdx === 0 ? 'invisible' : ''}`}
+                disabled={activeTabIdx === 0}
+               >
+                 <FaArrowLeft size={10} />
+               </button>
+               <button 
+                onClick={() => handleTabClick(activeTabIdx + 1)}
+                className={`p-3 rounded-full border border-current hover:bg-[#862b2a] hover:text-white transition-all duration-300 disabled:opacity-0 ${activeTabIdx === categoryData.length - 1 ? 'invisible' : ''}`}
+                disabled={activeTabIdx === categoryData.length - 1}
+               >
+                 <FaArrowRight size={10} />
+               </button>
             </div>
-            <div>
-              <div className="text-3xl font-bold mb-2" style={{ color: '#a76665' }}>25+</div>
-              <div className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Design Options</div>
-            </div>
-          </div>
-        </div>
+         </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes fade-in-blur { 
+          from { opacity: 0; filter: blur(10px); transform: translateY(10px); } 
+          to { opacity: 1; filter: blur(0); transform: translateY(0); } 
+        }
+        @keyframes reveal-up {
+           from { opacity: 0; transform: translateY(20px); }
+           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pop-in {
+           from { transform: scale(0.9); opacity: 0; }
+           to { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-fade-in-blur { animation: fade-in-blur 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-reveal-up { animation: reveal-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        .snap-x { scroll-snap-type: x mandatory; }
+        .snap-start { scroll-snap-align: start; }
+      `}} />
     </div>
   );
 };

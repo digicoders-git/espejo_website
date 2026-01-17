@@ -76,6 +76,40 @@ class ProductService {
     };
   }
 
+  // FETCH ALL CATEGORIES
+  static async getCategories() {
+    try {
+      console.log('🔄 Fetching categories...');
+      const res = await fetch(`${API_BASE_URL}/categories`, {
+        method: 'GET',
+        headers: this.getHeaders()
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to fetch categories');
+      return { success: true, categories: data.categories || [] };
+    } catch (error) {
+      console.error('❌ Error fetching categories:', error);
+      return { success: false, categories: [] };
+    }
+  }
+
+  // FETCH CATEGORY BY SLUG
+  static async getCategoryBySlug(slug) {
+    try {
+      console.log('🔄 Fetching category by slug:', slug);
+      const res = await fetch(`${API_BASE_URL}/categories/${slug}`, {
+        method: 'GET',
+        headers: this.getHeaders()
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, message: data.message || 'Category not found' };
+      return { success: true, category: data.category };
+    } catch (error) {
+      console.error('❌ Error fetching category by slug:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
   // FETCH ALL PRODUCTS
   static async getAllProducts() {
     try {
@@ -168,35 +202,47 @@ class ProductService {
     }
   }
 
-  // GET PRODUCTS BY CATEGORY
+  // GET PRODUCTS BY CATEGORY ID
+  static async getProductsByCategoryId(categoryId) {
+    try {
+      console.log('🔄 Fetching products by category ID:', categoryId);
+      const { products } = await this.getAllProducts();
+      const filtered = products.filter(p => p.category?._id === categoryId);
+      return { 
+        success: true, 
+        products: filtered.map(p => this.mapProductData(p, true)) 
+      };
+    } catch (error) {
+       console.error('❌ Error fetching products by category ID:', error);
+       return { success: false, products: [] };
+    }
+  }
+
+  // GET PRODUCTS BY CATEGORY (Dynamic Filtering)
   static async getProductsByCategory(categoryName, page = 1, limit = 12) {
     try {
-      console.log('🔄 Fetching products by category:', categoryName);
-      
+      console.log('🔄 Fetching products by category name:', categoryName);
       const { products } = await this.getAllProducts();
       
-      // Filter by category
-      const categoryProducts = products.filter(p => 
-        p.category?.name?.toLowerCase() === categoryName.toLowerCase()
-      );
+      const categoryProducts = products.filter(p => {
+        const pCatName = p.category?.name?.toLowerCase() || '';
+        const target = categoryName.toLowerCase();
+        return pCatName.includes(target);
+      });
       
-      // Pagination
       const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
       const paginatedProducts = categoryProducts
-        .slice(startIndex, endIndex)
+        .slice(startIndex, startIndex + limit)
         .map(p => this.mapProductData(p, true));
       
       return {
         success: true,
         products: paginatedProducts,
-        total: categoryProducts.length,
-        page,
-        totalPages: Math.ceil(categoryProducts.length / limit)
+        total: categoryProducts.length
       };
     } catch (error) {
       console.error('❌ Error fetching category products:', error);
-      throw new Error(error.message || 'Failed to fetch category products');
+      return { success: false, products: [] };
     }
   }
 
