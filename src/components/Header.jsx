@@ -98,7 +98,7 @@ const Header = ({ onUserClick }) => {
           onClick={() => navigate("/")}
         >
           <img
-            src="/Logo/PNG/Logo.png"
+            src="/Logo/PNG/esj2.png"
             alt="Logo"
             className="h-[30px] md:h-[60px] object-contain"
           />
