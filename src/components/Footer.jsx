@@ -29,17 +29,10 @@ const Footer = ({ onLoginClick }) => {
     <footer className={`${isDark ? 'bg-black text-white' : 'bg-gray-100 text-black'} py-12 px-6 border-t`}>
       
       {/* ===== MAIN FOOTER GRID ===== */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
         {/* ========== OUR COMPANY ========== */}
         <div>
-          <img
-            src="/Logo/PNG/SLogo2.png"
-            alt="ESPEJO Logo"
-            className="h-[90px] object-contain mb-5 cursor-pointer"
-            onClick={() => navigate('/')}
-          />
-
           <h3 className="text-lg font-semibold mb-4">Our Company</h3>
 
           <ul className={`${isDark ? 'text-gray-300' : 'text-gray-600'} space-y-2 text-sm md:text-[16px]`}>
@@ -57,24 +50,15 @@ const Footer = ({ onLoginClick }) => {
           </ul>
         </div>
 
-        {/* ========== EXPLORE + SOCIAL ========== */}
+        {/* ========== EXPLORE ========== */}
         <div>
           <h3 className="text-lg font-semibold mb-4">Explore</h3>
 
-          <ul className={`${isDark ? 'text-gray-300' : 'text-gray-600'} space-y-2 text-sm md:text-[16px] mb-6`}>
+          <ul className={`${isDark ? 'text-gray-300' : 'text-gray-600'} space-y-2 text-sm md:text-[16px]`}>
             <li onClick={() => navigate('/become-dealer')} className="cursor-pointer hover:text-[#862b2a]">Become a dealer</li>
             <li onClick={() => navigate('/sitemap')} className="cursor-pointer hover:text-[#862b2a]">Sitemap</li>
             <li onClick={() => navigate('/blog')} className="cursor-pointer hover:text-[#862b2a]">Blog</li>
           </ul>
-
-          <h4 className="text-sm font-semibold mb-3">Follow Us</h4>
-
-          <div className="flex gap-4">
-            <SocialIcon icon={<FaFacebookF />} isDark={isDark} />
-            <SocialIcon icon={<FaTwitter />} isDark={isDark} />
-            <SocialIcon icon={<FaInstagram />} isDark={isDark} />
-            <SocialIcon icon={<FaLinkedinIn />} isDark={isDark} />
-          </div>
         </div>
 
         {/* ========== PRODUCTS ========== */}
@@ -95,6 +79,25 @@ const Footer = ({ onLoginClick }) => {
                 </li>
               ))}
           </ul>
+        </div>
+
+        {/* ========== LOGO + SOCIAL MEDIA ========== */}
+        <div className="flex flex-col items-start">
+          <img
+            src="/Logo/PNG/esj.png"
+            alt="ESPEJO Logo"
+            className="h-[140px] object-contain mb-6 cursor-pointer"
+            onClick={() => navigate('/')}
+          />
+
+          <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
+
+          <div className="flex gap-4">
+            <SocialIcon icon={<FaFacebookF />} isDark={isDark} />
+            <SocialIcon icon={<FaTwitter />} isDark={isDark} />
+            <SocialIcon icon={<FaInstagram />} isDark={isDark} />
+            <SocialIcon icon={<FaLinkedinIn />} isDark={isDark} />
+          </div>
         </div>
 
       </div>

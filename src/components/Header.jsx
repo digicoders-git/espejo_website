@@ -100,7 +100,7 @@ const Header = ({ onUserClick }) => {
           <img
             src="/Logo/PNG/esj2.png"
             alt="Logo"
-            className="h-[30px] md:h-[60px] object-contain"
+            className="h-[50px] md:h-[80px] object-contain"
           />
         </div>
 

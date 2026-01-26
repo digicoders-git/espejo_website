@@ -1,31 +1,17 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { createContext, useContext, useState } from 'react';
 
 const LoadingContext = createContext();
 
-export const useLoading = () => {
+export function useLoading() {
   const context = useContext(LoadingContext);
   if (!context) {
     throw new Error('useLoading must be used within a LoadingProvider');
   }
   return context;
-};
+}
 
-export const LoadingProvider = ({ children }) => {
+export function LoadingProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
-  const location = useLocation();
-
-  // Show loader on route change
-  useEffect(() => {
-    setIsLoading(true);
-    
-    // Simulate loading time (minimum 800ms for smooth UX)
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [location.pathname]);
 
   // Manual loading control
   const showLoader = () => setIsLoading(true);
@@ -42,4 +28,4 @@ export const LoadingProvider = ({ children }) => {
       {children}
     </LoadingContext.Provider>
   );
-};
+}
