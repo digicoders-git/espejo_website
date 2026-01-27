@@ -22,9 +22,9 @@ const PageLoader = () => {
         {/* Logo */}
         <div className="mb-8">
           <img
-            src="/Logo/PNG/Logo.png"
+            src="/Logo/PNG/esj2.png"
             alt="ESPEJO"
-            className="h-16 w-auto object-contain animate-pulse"
+            className="h-32 w-auto object-contain animate-pulse"
           />
         </div>
 
