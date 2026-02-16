@@ -32,9 +32,34 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
           onClose();
         }
       } else {
+        // Phone validation
+        if (!/^[6-9]\d{9}$/.test(formData.phone)) {
+          toast.error('Please enter a valid 10-digit phone number');
+          setLoading(false);
+          return;
+        }
+
+        // Age validation (minimum 20 years)
+        if (formData.dateOfBirth) {
+          const birthDate = new Date(formData.dateOfBirth);
+          const today = new Date();
+          const age = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+          const dayDiff = today.getDate() - birthDate.getDate();
+          
+          const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+          
+          if (actualAge < 20) {
+            toast.error('You must be at least 20 years old to register');
+            setLoading(false);
+            return;
+          }
+        }
+        
         // Validate passwords match
         if (formData.password !== formData.confirmPassword) {
           toast.error('Passwords do not match!');
+          setLoading(false);
           return;
         }
         

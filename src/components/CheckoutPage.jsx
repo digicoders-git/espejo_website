@@ -218,6 +218,18 @@ const CheckoutPage = () => {
       }
     }
 
+    // Phone validation
+    if (!/^[6-9]\d{9}$/.test(newAddress.phone)) {
+      showError("Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    // Pincode validation
+    if (!/^\d{6}$/.test(newAddress.pincode)) {
+      showError("Please enter a valid 6-digit pincode");
+      return;
+    }
+
     try {
       const res = await fetch(ADDRESS_API, {
         method: "POST",
@@ -227,6 +239,12 @@ const CheckoutPage = () => {
         },
         body: JSON.stringify(newAddress),
       });
+
+      if (res.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/', { state: { openAuth: true } });
+        return;
+      }
 
       const data = await res.json();
 

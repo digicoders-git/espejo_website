@@ -77,6 +77,13 @@ function MainContent() {
   const { isLoggedIn } = useAuth();
   const { isLoading } = useLoading();
   const { addToCart } = useCart();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openAuth) {
+      setShowAuth(true);
+    }
+  }, [location]);
 
   const handleBuyNow = async (item) => {
     setSelectedItem(item);
