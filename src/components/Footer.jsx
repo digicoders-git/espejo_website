@@ -12,10 +12,9 @@ const Footer = ({ onLoginClick }) => {
 
   useEffect(() => {
     const fetchData = async () => {
+      const VITE_API_URL = import.meta.env.VITE_API_URL || "https://glassadminpanelapi-zvz4.onrender.com/api";
       try {
-        const productsRes = await fetch(
-          'https://glassadminpanelapi.onrender.com/api/products'
-        );
+        const productsRes = await fetch(`${VITE_API_URL}/products`);
         const productsData = await productsRes.json();
         setProducts(productsData.products || []);
       } catch (error) {
@@ -67,17 +66,29 @@ const Footer = ({ onLoginClick }) => {
 
           <ul className={`${isDark ? 'text-gray-300' : 'text-gray-600'} space-y-2 text-sm md:text-[16px]`}>
             {products
-              .filter(p => p.category?.slug)
-              .slice(0, 10)
+              .slice(0, 8)
               .map(product => (
                 <li
                   key={product._id}
                   className="cursor-pointer hover:text-[#862b2a]"
-                  onClick={() => navigate(`/category/${product.category.slug}`)}
+                  onClick={() => navigate(`/product/${product._id}`)}
                 >
                   {product.name}
                 </li>
               ))}
+            {products.length > 8 && (
+              <li
+                className="pt-2"
+              >
+                <button
+                  onClick={() => navigate('/all-products')}
+                  className="text-[#862b2a] font-bold hover:underline underline-offset-4 flex items-center gap-1 group transition-all"
+                >
+                  View All Products
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </li>
+            )}
           </ul>
         </div>
 

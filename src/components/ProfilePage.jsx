@@ -737,30 +737,6 @@ const ProfilePage = () => {
                   <FaBoxOpen className="text-[#a76665]" />
                   My Orders
                 </h2>
-                {orders.length > 0 && (
-                  <button
-                    onClick={async () => {
-                      const result = await Swal.fire({
-                        title: 'Clear Order History?',
-                        text: 'Are you sure you want to clear all order history?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ef4444',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Yes, clear all',
-                        cancelButtonText: 'Cancel'
-                      });
-                      
-                      if (result.isConfirmed) {
-                        await clearOrders();
-                        Swal.fire('Cleared!', 'Order history cleared successfully', 'success');
-                      }
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 md:px-4 py-2 rounded-lg font-semibold flex items-center gap-2 text-xs md:text-sm"
-                  >
-                    <FaTrash size={12} /> Clear All
-                  </button>
-                )}
               </div>
 
               {loading && (
@@ -816,11 +792,11 @@ const ProfilePage = () => {
                           })}
                         </p>
                       </div>
-                      <span className={`px-4 py-2 rounded-full text-sm font-medium ${order.status === 'Delivered' ? 
+                      <span className={`px-4 py-2 rounded-full text-sm font-medium ${order.status?.toLowerCase() === 'delivered' ? 
                         (isDark ? 'bg-green-800 text-green-300' : 'bg-green-100 text-green-700') :
-                        order.status === 'Cancelled' ? 
+                        order.status?.toLowerCase() === 'cancelled' ? 
                         (isDark ? 'bg-red-800 text-red-300' : 'bg-red-100 text-red-700') :
-                        order.status === 'Processing' ? 
+                        order.status?.toLowerCase() === 'processing' || order.status?.toLowerCase() === 'pending' ? 
                         (isDark ? 'bg-blue-800 text-blue-300' : 'bg-blue-100 text-blue-700') :
                         (isDark ? 'bg-[#a76665]/30 text-[#a76665]' : 'bg-[#a76665]/20 text-[#a76665]')
                         }`}>
@@ -872,8 +848,9 @@ const ProfilePage = () => {
                         </p>
                       </div>
 
-                      {order.status !== "Delivered" &&
-                        order.status !== "Cancelled" && (
+                      {order.status?.toLowerCase() !== "delivered" &&
+                        order.status?.toLowerCase() !== "cancelled" && 
+                        order.status?.toLowerCase() !== "shipped" && (
                           <button
                             onClick={async (e) => {
                               e.stopPropagation();

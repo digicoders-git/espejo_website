@@ -91,7 +91,7 @@ export const OrderProvider = ({ children }) => {
         // Update order status immediately in UI
         setOrders((prev) =>
           prev.map((o) =>
-            o._id === orderId ? { ...o, status: "Cancelled" } : o
+            o._id === orderId ? { ...o, status: data.order?.status || "cancelled" } : o
           )
         );
         console.log('✅ Order cancelled successfully');

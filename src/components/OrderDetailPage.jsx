@@ -111,10 +111,10 @@ const OrderDetailPage = () => {
               </h2>
               <div className="flex items-center justify-between mb-8">
                 <span className={`px-4 py-1.5 rounded-full text-sm font-semibold uppercase tracking-wider ${
-                  order.status === 'Delivered' ? 
+                  order.status?.toLowerCase() === 'delivered' ? 
                   (isDark ? 'bg-green-800/30 text-green-400' : 'bg-green-100 text-green-700') :
-                  order.status === 'Cancelled' ? 
-                  (isDark ? 'bg-red-800/30 text-red-400' : 'bg-red-100 text-red-700') :
+                  order.status?.toLowerCase() === 'cancelled' ? 
+                  (isDark ? 'bg-red-800/30 text-red-500' : 'bg-red-100 text-red-600') :
                   (isDark ? 'bg-[#a76665]/30 text-[#a76665]' : 'bg-[#a76665]/10 text-[#a76665]')
                 }`}>
                   {order.status}
@@ -126,74 +126,88 @@ const OrderDetailPage = () => {
 
               {/* Progress Bar */}
               <div className="relative pt-4 pb-8">
-                <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-[#a76665] to-[#8f5654] transition-all duration-1000"
-                    style={{ 
-                      width: order.status?.toLowerCase() === 'delivered' ? '100%' : 
-                             order.status?.toLowerCase() === 'shipped' ? '66%' : 
-                             order.status?.toLowerCase() === 'confirmed' ? '33%' : '0%' 
-                    }}
-                  ></div>
-                </div>
-
-                <div className="relative flex justify-between">
-                  {/* Step 1: Placed */}
-                  <div className="flex flex-col items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
-                      ['placed', 'confirmed', 'shipped', 'delivered', 'processing'].includes(order.status?.toLowerCase())
-                      ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
-                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
-                    }`}>
-                      <FaBox size={18} />
+                {order.status?.toLowerCase() === 'cancelled' ? (
+                  <div className="flex flex-col items-center py-4">
+                    <div className="w-full h-1 bg-red-100 dark:bg-red-900/20 rounded-full overflow-hidden mb-6">
+                      <div className="h-full bg-red-500 w-full"></div>
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      ['placed', 'confirmed', 'shipped', 'delivered', 'processing'].includes(order.status?.toLowerCase()) ? 'text-[#a76665]' : 'text-gray-400'
-                    }`}>Placed</span>
-                  </div>
-
-                  {/* Step 2: Confirmed */}
-                  <div className="flex flex-col items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
-                      ['confirmed', 'shipped', 'delivered'].includes(order.status?.toLowerCase())
-                      ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
-                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
-                    }`}>
-                      <FaClipboardCheck size={18} />
+                    <div className="flex items-center gap-3 text-red-500 font-bold text-lg uppercase tracking-wider">
+                      <span className="w-10 h-10 rounded-full border-4 border-red-500 flex items-center justify-center">✕</span>
+                      Order Cancelled
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      ['confirmed', 'shipped', 'delivered'].includes(order.status?.toLowerCase()) ? 'text-[#a76665]' : 'text-gray-400'
-                    }`}>Confirmed</span>
                   </div>
-
-                  {/* Step 3: Shipped */}
-                  <div className="flex flex-col items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
-                      ['shipped', 'delivered'].includes(order.status?.toLowerCase())
-                      ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
-                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
-                    }`}>
-                      <FaTruck size={18} />
+                ) : (
+                  <>
+                    <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#a76665] to-[#8f5654] transition-all duration-1000"
+                        style={{ 
+                          width: order.status?.toLowerCase() === 'delivered' ? '100%' : 
+                                 order.status?.toLowerCase() === 'shipped' ? '66%' : 
+                                 order.status?.toLowerCase() === 'confirmed' ? '33%' : '0%' 
+                        }}
+                      ></div>
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      ['shipped', 'delivered'].includes(order.status?.toLowerCase()) ? 'text-[#a76665]' : 'text-gray-400'
-                    }`}>Shipped</span>
-                  </div>
 
-                  {/* Step 4: Delivered */}
-                  <div className="flex flex-col items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
-                      order.status?.toLowerCase() === 'delivered'
-                      ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
-                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
-                    }`}>
-                      <FaShieldAlt size={18} />
+                    <div className="relative flex justify-between">
+                      {/* Step 1: Placed */}
+                      <div className="flex flex-col items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
+                          ['placed', 'confirmed', 'shipped', 'delivered', 'processing', 'pending'].includes(order.status?.toLowerCase())
+                          ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
+                        }`}>
+                          <FaBox size={18} />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                          ['placed', 'confirmed', 'shipped', 'delivered', 'processing', 'pending'].includes(order.status?.toLowerCase()) ? 'text-[#a76665]' : 'text-gray-400'
+                        }`}>Placed</span>
+                      </div>
+
+                      {/* Step 2: Confirmed */}
+                      <div className="flex flex-col items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
+                          ['confirmed', 'shipped', 'delivered'].includes(order.status?.toLowerCase())
+                          ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
+                        }`}>
+                          <FaClipboardCheck size={18} />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                          ['confirmed', 'shipped', 'delivered'].includes(order.status?.toLowerCase()) ? 'text-[#a76665]' : 'text-gray-400'
+                        }`}>Confirmed</span>
+                      </div>
+
+                      {/* Step 3: Shipped */}
+                      <div className="flex flex-col items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
+                          ['shipped', 'delivered'].includes(order.status?.toLowerCase())
+                          ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
+                        }`}>
+                          <FaTruck size={18} />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                          ['shipped', 'delivered'].includes(order.status?.toLowerCase()) ? 'text-[#a76665]' : 'text-gray-400'
+                        }`}>Shipped</span>
+                      </div>
+
+                      {/* Step 4: Delivered */}
+                      <div className="flex flex-col items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
+                          order.status?.toLowerCase() === 'delivered'
+                          ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
+                        }`}>
+                          <FaShieldAlt size={18} />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                          order.status?.toLowerCase() === 'delivered' ? 'text-[#a76665]' : 'text-gray-400'
+                        }`}>Delivered</span>
+                      </div>
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                      order.status?.toLowerCase() === 'delivered' ? 'text-[#a76665]' : 'text-gray-400'
-                    }`}>Delivered</span>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             </div>
 
