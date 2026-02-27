@@ -1,5 +1,5 @@
 // Use environment variable from .env or fallback
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://glassadminpanelapi-zvz4.onrender.com/api';
 
 const PRODUCTS_API_BASE = `${API_BASE_URL}/products`;
 // ----------------------------------------------------------------------

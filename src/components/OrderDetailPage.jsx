@@ -37,7 +37,8 @@ const OrderDetailPage = () => {
         return;
       }
 
-      const response = await fetch(`https://glassadminpanelapi.onrender.com/api/user-orders/${orderId}`, {
+      const VITE_API_URL = import.meta.env.VITE_API_URL || "https://glassadminpanelapi.onrender.com/api";
+      const response = await fetch(`${VITE_API_URL}/user-orders/${orderId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

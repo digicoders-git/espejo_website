@@ -1,5 +1,6 @@
 // 🔐 Authentication Service
-const API_BASE = "https://glassadminpanelapi.onrender.com/api/users";
+const VITE_API_URL = import.meta.env.VITE_API_URL || "https://glassadminpanelapi.onrender.com/api";
+const API_BASE = `${VITE_API_URL}/users`;
 
 // 📝 User Registration
 export const registerUser = async (userData) => {

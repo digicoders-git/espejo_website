@@ -36,10 +36,11 @@ export const OrderProvider = ({ children }) => {
       return;
     }
 
+    const VITE_API_URL = import.meta.env.VITE_API_URL || "https://glassadminpanelapi.onrender.com/api";
     try {
       setLoading(true);
       const res = await fetch(
-        "https://glassadminpanelapi.onrender.com/api/user-orders?page=1&limit=10",
+        `${VITE_API_URL}/user-orders?page=1&limit=10`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -71,8 +72,9 @@ export const OrderProvider = ({ children }) => {
 
     try {
       console.log('🚫 Cancelling order:', orderId);
+      const VITE_API_URL = import.meta.env.VITE_API_URL || "https://glassadminpanelapi.onrender.com/api";
       const res = await fetch(
-        `https://glassadminpanelapi.onrender.com/api/user-orders/${orderId}/cancel`,
+        `${VITE_API_URL}/user-orders/${orderId}/cancel`,
         {
           method: "PUT",
           headers: {
@@ -111,8 +113,9 @@ export const OrderProvider = ({ children }) => {
 
     try {
       console.log('📍 Tracking order:', orderId);
+      const VITE_API_URL = import.meta.env.VITE_API_URL || "https://glassadminpanelapi.onrender.com/api";
       const res = await fetch(
-        `https://glassadminpanelapi.onrender.com/api/user-orders/${orderId}/track`,
+        `${VITE_API_URL}/user-orders/${orderId}/track`,
         {
           method: "GET",
           headers: {
