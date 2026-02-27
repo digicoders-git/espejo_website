@@ -72,7 +72,7 @@ export const OrderProvider = ({ children }) => {
 
     try {
       console.log('🚫 Cancelling order:', orderId);
-      const VITE_API_URL = import.meta.env.VITE_API_URL || "https://glassadminpanelapi.onrender.com/api";
+      const VITE_API_URL = import.meta.env.VITE_API_URL || "https://glassadminpanelapi-zvz4.onrender.com/api";
       const res = await fetch(
         `${VITE_API_URL}/user-orders/${orderId}/cancel`,
         {
@@ -97,7 +97,15 @@ export const OrderProvider = ({ children }) => {
         console.log('✅ Order cancelled successfully');
         return true;
       } else {
-        console.error('❌ Cancel failed:', data);
+        console.error('❌ Cancel failed. Status:', res.status, 'Message:', data.message || 'Unknown error');
+        if (data.message) {
+          Swal.fire({
+            title: 'Cancellation Failed',
+            text: data.message,
+            icon: 'error',
+            confirmButtonColor: '#a76665'
+          });
+        }
         return false;
       }
     } catch (err) {
