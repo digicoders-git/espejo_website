@@ -11,6 +11,8 @@ export const useCart = () => {
   return context;
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://glassadminpanelapi.onrender.com/api";
+
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [token, setToken] = useState(null);
@@ -55,7 +57,7 @@ export const CartProvider = ({ children }) => {
 
       // console.log('📡 Loading cart from backend...');
       const response = await fetch(
-        "https://glassadminpanelapi.onrender.com/api/cart",
+        `${API_BASE_URL}/cart`,
         {
           method: "GET",
           headers: {
@@ -85,7 +87,7 @@ export const CartProvider = ({ children }) => {
               if (!product.img && !product.image && item.productId) {
                 try {
                   const productRes = await fetch(
-                    `https://glassadminpanelapi.onrender.com/api/products/${item.productId}`,
+                    `${API_BASE_URL}/products/${item.productId}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                   );
                   if (productRes.ok) {
@@ -192,7 +194,7 @@ export const CartProvider = ({ children }) => {
       console.log('📦 Request payload:', payload);
       
       const response = await fetch(
-        "https://glassadminpanelapi.onrender.com/api/cart/add",
+        `${API_BASE_URL}/cart/add`,
         {
           method: "POST",
           headers: {
@@ -291,7 +293,7 @@ export const CartProvider = ({ children }) => {
 
       console.log('📡 Making remove API call...');
       const response = await fetch(
-        `https://glassadminpanelapi.onrender.com/api/cart/item/${productId}`,
+        `${API_BASE_URL}/cart/item/${productId}`,
         {
           method: "DELETE",
           headers: {
@@ -342,7 +344,7 @@ export const CartProvider = ({ children }) => {
 
       console.log('📡 Making update quantity API call...');
       const response = await fetch(
-        "https://glassadminpanelapi.onrender.com/api/cart/update",
+        `${API_BASE_URL}/cart/update`,
         {
           method: "PUT",
           headers: {
@@ -388,7 +390,7 @@ export const CartProvider = ({ children }) => {
 
       console.log('📡 Making clear cart API call...');
       const response = await fetch(
-        "https://glassadminpanelapi.onrender.com/api/cart/clear",
+        `${API_BASE_URL}/cart/clear`,
         {
           method: "DELETE",
           headers: {

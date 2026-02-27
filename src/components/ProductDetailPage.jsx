@@ -258,6 +258,12 @@ const ProductDetailPage = () => {
                 <span className="text-sm font-medium px-2 py-1 rounded-full" style={{backgroundColor: '#862b2a20', color: '#862b2a'}}>
                   {product.category}
                 </span>
+                {product.isBestSeller && (
+                  <span className="text-sm font-bold px-2 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm" style={{backgroundColor: '#a76665', color: 'white'}}>
+                    <FaStar size={10} />
+                    Best Seller
+                  </span>
+                )}
                 {product.discount > 0 && (
                   <span className="text-sm font-medium px-2 py-1 bg-red-100 text-red-600 rounded-full">
                     {product.discount}% OFF
@@ -339,7 +345,11 @@ const ProductDetailPage = () => {
                       {product.sizes.map((size, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 border rounded-lg text-sm bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                          className={`px-4 py-2 border rounded-full text-sm font-medium transition-colors ${
+                            isDark 
+                              ? "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700" 
+                              : "bg-gray-100 border-gray-200 text-gray-800 hover:bg-gray-200"
+                          }`}
                         >
                           {size}
                         </span>
@@ -356,7 +366,11 @@ const ProductDetailPage = () => {
                       {product.colors.map((color, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 border rounded-lg text-sm bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                          className={`px-4 py-2 border rounded-full text-sm font-medium transition-colors ${
+                            isDark 
+                              ? "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700" 
+                              : "bg-gray-100 border-gray-200 text-gray-800 hover:bg-gray-200"
+                          }`}
                         >
                           {color}
                         </span>

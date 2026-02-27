@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useOrder } from '../context/OrderContext';
-import { FaArrowLeft, FaBoxOpen, FaCalendarAlt, FaCreditCard, FaMapMarkerAlt, FaPhone, FaUser, FaShoppingCart } from 'react-icons/fa';
+import { FaArrowLeft, FaBoxOpen, FaCalendarAlt, FaCreditCard, FaMapMarkerAlt, FaPhone, FaUser, FaShoppingCart, FaBox, FaTruck, FaCheckCircle, FaShieldAlt, FaClipboardCheck } from 'react-icons/fa';
 
 const OrderDetailPage = () => {
   const { orderId } = useParams();
@@ -108,27 +108,90 @@ const OrderDetailPage = () => {
                 <FaBoxOpen className="text-[#a76665]" />
                 Order Status
               </h2>
-              <div className="flex items-center justify-between">
-                <span className={`px-6 py-3 rounded-full text-lg font-medium ${
+              <div className="flex items-center justify-between mb-8">
+                <span className={`px-4 py-1.5 rounded-full text-sm font-semibold uppercase tracking-wider ${
                   order.status === 'Delivered' ? 
-                  (isDark ? 'bg-green-800 text-green-300' : 'bg-green-100 text-green-700') :
+                  (isDark ? 'bg-green-800/30 text-green-400' : 'bg-green-100 text-green-700') :
                   order.status === 'Cancelled' ? 
-                  (isDark ? 'bg-red-800 text-red-300' : 'bg-red-100 text-red-700') :
-                  order.status === 'Processing' ? 
-                  (isDark ? 'bg-blue-800 text-blue-300' : 'bg-blue-100 text-blue-700') :
-                  (isDark ? 'bg-[#a76665]/30 text-[#a76665]' : 'bg-[#a76665]/20 text-[#a76665]')
+                  (isDark ? 'bg-red-800/30 text-red-400' : 'bg-red-100 text-red-700') :
+                  (isDark ? 'bg-[#a76665]/30 text-[#a76665]' : 'bg-[#a76665]/10 text-[#a76665]')
                 }`}>
                   {order.status}
                 </span>
                 <div className="text-right">
-                  <p className="text-sm text-gray-400">Order Date</p>
-                  <p className="font-medium">
-                    {new Date(order.createdAt || Date.now()).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
+                  <p className="text-xs text-gray-400">Order ID: <span className="text-gray-300 font-mono">#{order._id.slice(-8)}</span></p>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="relative pt-4 pb-8">
+                <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#a76665] to-[#8f5654] transition-all duration-1000"
+                    style={{ 
+                      width: order.status?.toLowerCase() === 'delivered' ? '100%' : 
+                             order.status?.toLowerCase() === 'shipped' ? '66%' : 
+                             order.status?.toLowerCase() === 'confirmed' ? '33%' : '0%' 
+                    }}
+                  ></div>
+                </div>
+
+                <div className="relative flex justify-between">
+                  {/* Step 1: Placed */}
+                  <div className="flex flex-col items-center gap-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
+                      ['placed', 'confirmed', 'shipped', 'delivered', 'processing'].includes(order.status?.toLowerCase())
+                      ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
+                    }`}>
+                      <FaBox size={18} />
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      ['placed', 'confirmed', 'shipped', 'delivered', 'processing'].includes(order.status?.toLowerCase()) ? 'text-[#a76665]' : 'text-gray-400'
+                    }`}>Placed</span>
+                  </div>
+
+                  {/* Step 2: Confirmed */}
+                  <div className="flex flex-col items-center gap-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
+                      ['confirmed', 'shipped', 'delivered'].includes(order.status?.toLowerCase())
+                      ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
+                    }`}>
+                      <FaClipboardCheck size={18} />
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      ['confirmed', 'shipped', 'delivered'].includes(order.status?.toLowerCase()) ? 'text-[#a76665]' : 'text-gray-400'
+                    }`}>Confirmed</span>
+                  </div>
+
+                  {/* Step 3: Shipped */}
+                  <div className="flex flex-col items-center gap-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
+                      ['shipped', 'delivered'].includes(order.status?.toLowerCase())
+                      ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
+                    }`}>
+                      <FaTruck size={18} />
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      ['shipped', 'delivered'].includes(order.status?.toLowerCase()) ? 'text-[#a76665]' : 'text-gray-400'
+                    }`}>Shipped</span>
+                  </div>
+
+                  {/* Step 4: Delivered */}
+                  <div className="flex flex-col items-center gap-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-4 transition-all duration-500 ${
+                      order.status?.toLowerCase() === 'delivered'
+                      ? 'bg-[#a76665] border-[#fdf3f3] dark:border-gray-800 text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
+                    }`}>
+                      <FaShieldAlt size={18} />
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                      order.status?.toLowerCase() === 'delivered' ? 'text-[#a76665]' : 'text-gray-400'
+                    }`}>Delivered</span>
+                  </div>
                 </div>
               </div>
             </div>

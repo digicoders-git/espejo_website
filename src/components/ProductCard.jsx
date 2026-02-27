@@ -90,6 +90,16 @@ const ProductCard = ({ product, onClick, isDark, showActions = true, size = 'med
           </div>
         )}
 
+        {/* Best Seller Badge */}
+        {product.isBestSeller && (
+          <div className="absolute top-12 left-3 z-20">
+            <span className="text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-md bg-[#a76665] text-white">
+              <FaStar size={8} />
+              Best Seller
+            </span>
+          </div>
+        )}
+
         {/* Wishlist Button */}
         {showActions && (
           <button

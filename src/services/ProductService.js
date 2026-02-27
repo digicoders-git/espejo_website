@@ -1,8 +1,5 @@
-
-// For PRODUCTION (hosted): Uses render.com URL
-const API_BASE_URL = 'https://glassadminpanelapi-zvz4.onrender.com/api';
-// For LOCAL development:
-// const API_BASE_URL = 'http://localhost:5000/api';
+// Use environment variable from .env or fallback
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const PRODUCTS_API_BASE = `${API_BASE_URL}/products`;
 // ----------------------------------------------------------------------
@@ -308,7 +305,7 @@ class ProductService {
   }
 
   // GET FEATURED/BESTSELLER PRODUCTS
-  static async getFeaturedProducts(limit = 8, minRating = 0) {
+  static async getFeaturedProducts(limit = 8) {
     try {
       console.log('🔄 Fetching featured products...');
       
@@ -318,8 +315,7 @@ class ProductService {
       const featuredProducts = products
         .filter(p => {
           const stock = p.stock !== undefined ? p.stock : 50;
-          const rating = p.averageRating || 0;
-          return stock > 0 && rating >= minRating;
+          return stock > 0;
         })
         .sort((a, b) => {
           // Sort by discount percentage first, then by creation date
@@ -341,6 +337,31 @@ class ProductService {
         success: false,
         products: []
       };
+    }
+  }
+
+  // GET GENUINE BEST SELLER PRODUCTS (FILTER BY isBestSeller flag)
+  static async getBestSellers(limit = 8) {
+    try {
+      console.log('🔄 Fetching Best Seller products...');
+      const { products } = await this.getAllProducts();
+      
+      const bestSellers = products
+        .filter(p => {
+          const stock = p.stock !== undefined ? p.stock : 50;
+          return stock > 0 && p.isBestSeller === true;
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, limit)
+        .map(p => this.mapProductData(p, true));
+      
+      return {
+        success: true,
+        products: bestSellers
+      };
+    } catch (error) {
+      console.error('❌ Error fetching BestSellers:', error);
+      return { success: false, products: [] };
     }
   }
 
@@ -397,7 +418,7 @@ class ProductService {
       sizes: product.sizes || [],
       colors: product.colors || [],
       addOns: product.addOns || [],
-      about: product.about || ''
+      isBestSeller: product.isBestSeller || false
     };
 
     // Return minimal data for lists

@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import PageLoader from "./PageLoader";
 import ProductService from "../services/ProductService";
 
-const BestSeller = ({ onBuyNow, minRating = 0 }) => {
+const BestSeller = ({ onBuyNow }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { isDark } = useTheme();
@@ -48,7 +48,7 @@ const BestSeller = ({ onBuyNow, minRating = 0 }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await ProductService.getFeaturedProducts(8, minRating);
+        const response = await ProductService.getBestSellers(8);
         
         if (response.success && response.products.length > 0) {
           const mappedProducts = response.products.map(p => ({
@@ -60,7 +60,8 @@ const BestSeller = ({ onBuyNow, minRating = 0 }) => {
             oldPrice: p.originalPrice ? `₹${p.originalPrice}` : "",
             newPrice: typeof p.price === 'number' ? `₹${p.price}` : p.price,
             price: typeof p.price === 'number' ? `₹${p.price}` : p.price,
-            inStock: p.inStock
+            inStock: p.inStock,
+            isBestSeller: p.isBestSeller
           }));
           setProducts(mappedProducts);
         } else {
@@ -75,7 +76,7 @@ const BestSeller = ({ onBuyNow, minRating = 0 }) => {
     };
 
     fetchProducts();
-  }, [minRating]);
+  }, []);
 
   if (loading) {
     return <PageLoader />;
@@ -104,6 +105,14 @@ const BestSeller = ({ onBuyNow, minRating = 0 }) => {
           >
             {/* IMAGE */}
             <div className="relative">
+              {item.isBestSeller && (
+                <div className="absolute top-4 left-4 z-20">
+                  <span className="text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-md bg-[#a76665] text-white">
+                    <FaStar size={8} />
+                    Best Seller
+                  </span>
+                </div>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -111,15 +120,15 @@ const BestSeller = ({ onBuyNow, minRating = 0 }) => {
                     ? removeFromWishlist(item.id)
                     : addToWishlist(item);
                 }}
-                className={`absolute top-4 right-4 p-2 rounded-full z-10 ${
+                className={`absolute top-4 right-4 p-2 rounded-full transition-colors z-20 ${
                   isInWishlist(item.id)
-                    ? "bg-red-500 text-white"
+                    ? "bg-red-500 text-white shadow-lg"
                     : isDark 
-                    ? "bg-gray-700 text-white hover:bg-red-500 hover:text-white"
-                    : "bg-white text-gray-700 hover:bg-red-500 hover:text-white"
+                      ? "bg-gray-800/80 text-white hover:bg-red-500" 
+                      : "bg-white/80 text-gray-700 hover:bg-red-500 hover:text-white"
                 }`}
               >
-                <FaHeart size={16} />
+                <FaHeart size={14} />
               </button>
 
               <img
@@ -160,15 +169,15 @@ const BestSeller = ({ onBuyNow, minRating = 0 }) => {
               </div>
 
               {/* PRICE */}
-              <div className="mt-2">
+              <div className="mt-2 flex items-center gap-3">
+                <p className="font-bold text-lg text-[#a76665]">
+                  {item.newPrice}
+                </p>
                 {item.oldPrice && (
                   <p className={`text-xs line-through ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                     {item.oldPrice}
                   </p>
                 )}
-                <p className="font-bold text-base text-[#a76665]">
-                  {item.newPrice}
-                </p>
               </div>
 
               {/* BUTTONS */}
@@ -178,15 +187,13 @@ const BestSeller = ({ onBuyNow, minRating = 0 }) => {
                     e.stopPropagation();
                     handleBuyNow(item);
                   }}
-                  className="flex-1 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-1 text-xs"
+                  className="flex-1 text-white py-2.5 rounded-lg font-bold text-[11px] uppercase tracking-wide flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95"
                   style={{ backgroundColor: "#898383" }}
                   disabled={buyingNow[item.id]}
                 >
                   {buyingNow[item.id] === 'loading' && <ImSpinner8 className="animate-spin" size={12} />}
                   {buyingNow[item.id] === 'success' && <FaCheck size={12} />}
                   {!buyingNow[item.id] && 'Buy Now'}
-                  {buyingNow[item.id] === 'loading' && 'Processing...'}
-                  {buyingNow[item.id] === 'success' && 'Redirecting...'}
                 </button>
 
                 <button
@@ -199,15 +206,13 @@ const BestSeller = ({ onBuyNow, minRating = 0 }) => {
                       setAddingToCart(prev => ({ ...prev, [item.id]: null }));
                     }, 1500);
                   }}
-                  className="flex-1 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-1 text-xs"
+                  className="flex-1 text-white py-2.5 rounded-lg font-bold text-[11px] uppercase tracking-wide flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95"
                   style={{ backgroundColor: "#a76665" }}
                   disabled={addingToCart[item.id]}
                 >
                   {addingToCart[item.id] === 'loading' && <ImSpinner8 className="animate-spin" size={12} />}
                   {addingToCart[item.id] === 'success' && <FaCheck size={12} />}
                   {!addingToCart[item.id] && 'Add to Cart'}
-                  {addingToCart[item.id] === 'loading' && 'Adding...'}
-                  {addingToCart[item.id] === 'success' && 'Added!'}
                 </button>
               </div>
             </div>

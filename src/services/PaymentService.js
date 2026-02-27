@@ -1,6 +1,7 @@
 import { showSuccess, showError, showInfo } from '../components/CustomLoader';
 
-const PAYMENT_API_BASE = 'https://glassadminpanelapi-zvz4.onrender.com/api/payment';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const PAYMENT_API_BASE = `${API_BASE_URL}/payment`;
 
 class PaymentService {
 

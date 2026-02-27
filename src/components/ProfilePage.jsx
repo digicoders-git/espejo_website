@@ -828,7 +828,41 @@ const ProfilePage = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    {/* Simple Tracking Line */}
+                    <div className="my-6 relative">
+                      <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-[#a76665] transition-all duration-1000"
+                          style={{ 
+                            width: order.status?.toLowerCase() === 'delivered' ? '100%' : 
+                                   order.status?.toLowerCase() === 'shipped' ? '66%' : 
+                                   order.status?.toLowerCase() === 'confirmed' ? '33%' : '0%' 
+                          }}
+                        ></div>
+                      </div>
+                      <div className="relative flex justify-between px-1">
+                        {[0, 1, 2, 3].map((step) => {
+                          const status = order.status?.toLowerCase();
+                          const isActive = (step === 0) || 
+                                          (step === 1 && ['confirmed', 'shipped', 'delivered'].includes(status)) ||
+                                          (step === 2 && ['shipped', 'delivered'].includes(status)) ||
+                                          (step === 3 && status === 'delivered');
+                          return (
+                            <div key={step} className={`w-3 h-3 rounded-full border-2 z-10 ${
+                              isActive ? 'bg-[#a76665] border-[#a76665]' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                            }`}></div>
+                          );
+                        })}
+                      </div>
+                      <div className="flex justify-between mt-2 px-1">
+                        <span className="text-[8px] font-bold uppercase tracking-tight text-gray-400">Placed</span>
+                        <span className="text-[8px] font-bold uppercase tracking-tight text-gray-400">Confirmed</span>
+                        <span className="text-[8px] font-bold uppercase tracking-tight text-gray-400">Shipped</span>
+                        <span className="text-[8px] font-bold uppercase tracking-tight text-gray-400">Delivered</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-4 pb-2 border-b border-gray-100 dark:border-gray-700 mb-4">
                       <div>
                         <p className="text-xl font-bold text-[#a76665]">
                           Total: ₹{order.totalAmount || order.total || '0'}
