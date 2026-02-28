@@ -220,9 +220,9 @@ const OrderDetailPage = () => {
               <div className="space-y-4">
                 {(order.items || order.products || order.orderItems)?.map((item, index) => {
                   const itemData = {
-                    name: item.name || item.productName || item.title || 'Product',
-                    image: item.image || item.productImage || item.img || '/placeholder-product.jpg',
-                    price: item.price || item.productPrice || item.amount || 0,
+                    name: item.product?.name || item.name || item.productName || item.title || 'Product',
+                    image: item.productImage || item.product?.mainImage?.url || item.product?.mainImage || item.product?.image || item.product?.img || item.product?.images?.[0]?.url || item.product?.images?.[0] || item.image || item.productImage || item.img || 'https://via.placeholder.com/150?text=No+Image',
+                    price: item.productPrice || item.price || item.amount || 0,
                     quantity: item.quantity || item.qty || 1
                   };
                   
